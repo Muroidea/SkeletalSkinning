@@ -51,7 +51,7 @@ void Application::InitScene()
 	//Akai animation
 	m_AnimationManager->Load("Akai_StandingRunForward.fbx");
 
-
+	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Akai"), nullptr));
 	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Akai"), nullptr));
 	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Warrok"), nullptr));
 	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Warrok"), nullptr));

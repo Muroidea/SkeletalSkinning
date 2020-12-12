@@ -202,46 +202,45 @@ void Model::LoadMeshInfo(unsigned int meshIndex, const aiMesh* mesh, const aiNod
 void Model::LoadBones(unsigned int meshIndex, const aiMesh* mesh, const aiNode* node)
 {
     std::map<std::string, unsigned int> boneMapping;
-    m_Skeleton.m_NumBones = mesh->mNumBones;
 
     for (int i = 0; i < mesh->mNumBones; i++)
     {
-        m_Skeleton.m_Bones.push_back(Bone());
-    }
-
-    for (int i = mesh->mNumBones - 1; i >= 0; i--)
-    {
         std::string boneName = mesh->mBones[i]->mName.C_Str();
         boneMapping[boneName] = i;
-        m_Skeleton.m_Bones[i].Name = boneName;
-        m_Skeleton.m_Bones[i].Offset = glm::transpose(glm::make_mat4(&mesh->mBones[i]->mOffsetMatrix.a1));
+        m_Skeleton.m_Bones.push_back(Bone());
+    }
+    
+    ProcessNode(node, boneMapping, m_Skeleton.m_NumBones);
 
-        for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
+    for (int i = 0; i < mesh->mNumBones; i++)
+    {
+        int boneID = boneMapping[m_Skeleton.m_Bones[i].Name];
+        m_Skeleton.m_Bones[i].Offset = glm::transpose(glm::make_mat4(&mesh->mBones[boneID]->mOffsetMatrix.a1));
+        
+        for (unsigned int j = 0; j < mesh->mBones[boneID]->mNumWeights; j++)
         {
-            unsigned int vertexID = m_Entries[meshIndex].BaseVertex + mesh->mBones[i]->mWeights[j].mVertexId;
-            float weight = mesh->mBones[i]->mWeights[j].mWeight;
+            unsigned int vertexID = m_Entries[meshIndex].BaseVertex + mesh->mBones[boneID]->mWeights[j].mVertexId;
+            float weight = mesh->mBones[boneID]->mWeights[j].mWeight;
             m_Vertices[vertexID].AddBoneData(i, weight);
         }
     }
-
-    ProcessNode(node, boneMapping);
 }
 
-void Model::ProcessNode(const aiNode* node, const std::map<std::string, unsigned int>& boneMapping)
+void Model::ProcessNode(const aiNode* node, const std::map<std::string, unsigned int>& boneMapping, int parentID)
 {
     auto res = boneMapping.find(node->mName.C_Str());
     if (res != boneMapping.end())
     {
-        Bone& bone = m_Skeleton.m_Bones[res->second];
+        Bone& bone = m_Skeleton.m_Bones[m_Skeleton.m_NumBones];
+        bone.Name = node->mName.C_Str();
+        bone.ParentID = parentID;
         bone.DefaultTransformation = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
-
-        auto res2 = boneMapping.find(node->mParent->mName.C_Str());
-        if (res2 != boneMapping.end())
-            bone.ParentID = res2->second;
+        parentID = m_Skeleton.m_NumBones;
+        m_Skeleton.m_NumBones++;
     }
 
     for (int i = 0; i < node->mNumChildren; i++)
-        ProcessNode(node->mChildren[i], boneMapping);
+        ProcessNode(node->mChildren[i], boneMapping, parentID);
 }
 
 void Model::LoadMaterials(const aiScene* scene, const std::string& filename)

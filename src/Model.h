@@ -89,7 +89,7 @@ private:
     void LoadMaterials(const aiScene* scene, const std::string& filename);
     
     void LoadBones(unsigned int meshIndex, const aiMesh* mesh, const aiNode* node);
-    void ProcessNode(const aiNode* node, const std::map<std::string, unsigned int>& boneMapping);
+    void ProcessNode(const aiNode* node, const std::map<std::string, unsigned int>& boneMapping, int parentID);
 
     void Clear();
 };
