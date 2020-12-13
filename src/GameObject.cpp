@@ -14,7 +14,7 @@ GameObject::GameObject(std::string name, Model* model, AnimationState* animation
     s_Counter++;
 
 	if (animationState == nullptr)
-		m_AnimationState = new AnimationState(nullptr, (model) ? model->GetNumBones() : 0);
+		m_AnimationState = new AnimationState(nullptr);
 	else
 		m_AnimationState = animationState;
 }
@@ -57,24 +57,6 @@ void GameObject::SetAnimationState(AnimationState* animationState)
 		delete m_AnimationState;
 
 	m_AnimationState = animationState;
-}
-
-void GameObject::Update(bool dirtyFlag)
-{
-	if (m_ChildToRemove)
-		RemoveChild();
-
-	if (!m_Enabled) return;
-
-	dirtyFlag |= m_DirtyFlag;
-	if (dirtyFlag)
-	{
-		m_Global = GetLocalMatrix();
-		m_DirtyFlag = false;
-	}
-
-	for (int i = 0; i < m_Children.size(); i++)
-		m_Children[i]->Update(dirtyFlag, m_Global);
 }
 
 void GameObject::Update(bool dirtyFlag, const glm::mat4& parent)
@@ -241,17 +223,17 @@ void GameObject::DrawNodeGUI()
 	
 	ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-	if (GUI::DrawVec3("Position", position))
+	if (GUI::DrawVec3("Position", position, 1.0f))
 		SetLocalPosition(position);
 
 	ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-	if (GUI::DrawVec3("Rotation", rotation))
+	if (GUI::DrawVec3("Rotation", rotation, 0.2f))
 		SetLocalRotation(rotation);
 
 	ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-	if (GUI::DrawVec3("Scale", scale))
+	if (GUI::DrawVec3("Scale", scale, 0.1f))
 		SetLocalScale(scale);
 }
 

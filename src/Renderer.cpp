@@ -27,32 +27,40 @@ bool Renderer::Init()
     return true;
 }
 
-void Renderer::Render(GameObject *rootNode)
+void Renderer::Render(GameObject *rootNode, double deltaTime)
 {
     m_ShaderModel->Bind();
 
     auto children = rootNode->GetChildren();
     for (int i = 0; i < rootNode->GetNumChildren(); i++)
     {
-        RenderRecursive(children[i]);
+        RenderRecursive(children[i], deltaTime);
     }
 }
 
-void Renderer::RenderRecursive(GameObject *node)
+void Renderer::RenderRecursive(GameObject *node, double deltaTime)
 {
     if (!node->GetEnabled()) return;
 
     if (node->m_Model)
     {
+		auto& animState = node->m_AnimationState;
+		animState->AddTime(deltaTime);
+
+		if (animState->GetAnimation())
+			node->m_Model->m_Skeleton.TransformBones(m_AnimationTransforms, animState->GetTime(), animState->GetAnimation());
+		else
+			node->m_Model->m_Skeleton.GetTPoseTranformation(m_AnimationTransforms);
+
         m_ShaderModel->SetUniformMat4("Model", node->GetGlobalMatrix());
-        m_ShaderModel->SetUniformMat4("Bones", *node->m_AnimationState->GetTranforms().data(), node->m_AnimationState->GetTranforms().size());
+        m_ShaderModel->SetUniformMat4("Bones", *m_AnimationTransforms.data(), node->m_Model->GetNumBones());
         node->m_Model->Render();
     }
 
     auto children = node->GetChildren();
     for (int i = 0; i < node->GetNumChildren(); i++)
     {
-        RenderRecursive(children[i]);
+        RenderRecursive(children[i], deltaTime);
     }
 }
 
@@ -61,43 +69,6 @@ void Renderer::Resize(unsigned int width, unsigned int height)
     m_ShaderModel->Bind();
     m_ShaderModel->SetUniformMat4("Projection", glm::perspective(glm::radians(45.0f), float(width) / float(height), 0.1f, 10000.0f));
     m_ShaderModel->Unbind();
-}
-
-void Renderer::Update(GameObject *rootNode, double deltaTime)
-{
-    auto children = rootNode->GetChildren();
-    for (int i = 0; i < rootNode->GetNumChildren(); i++)
-    {
-        UpdateRecursive(children[i], deltaTime);
-    }
-}
-
-void Renderer::UpdateRecursive(GameObject* node, double deltaTime)
-{
-    if (!node->GetEnabled() || !node->m_Model) return;
-    auto& animState = node->m_AnimationState;
-
-    animState->AddTime(deltaTime);
-
-    if (animState->GetAnimation() && animState->IsDirty())
-    {
-        //auto t1 = std::chrono::high_resolution_clock::now();
-        node->m_Model->m_Skeleton.TransformBones(animState->GetTranforms(), animState->GetTime(), animState->GetAnimation());
-        /*auto t2 = std::chrono::high_resolution_clock::now(); 
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-
-        std::cout << duration << "\n";*/
-    }
-    else if (animState->IsDirty())
-    {
-        node->m_Model->m_Skeleton.GetTPoseTranformation(animState->GetTranforms());
-    }
-
-    auto children = node->GetChildren();
-    for (int i = 0; i < node->GetNumChildren(); i++)
-    {
-        UpdateRecursive(children[i], deltaTime);
-    }
 }
 
 void Renderer::UpdateCamera(Camera *camera)

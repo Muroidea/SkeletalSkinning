@@ -35,7 +35,7 @@ public:
 
     void Resize(unsigned int width, unsigned int height);
 
-	static bool DrawVec3(const std::string& labelID, glm::vec3& vector);
+	static bool DrawVec3(const std::string& labelID, glm::vec3& vector, float moveStep);
 };
 
 

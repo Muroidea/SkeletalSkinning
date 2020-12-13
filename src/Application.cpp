@@ -30,7 +30,7 @@ Application::Application(std::string title, unsigned int width, unsigned int hei
 	m_ModelManager = new ModelManager("../resources/models/");
 	m_AnimationManager = new AnimationManager("../resources/animations/");
 
-	m_RootNode = new GameObject("root", nullptr, nullptr);
+	m_RootNode = new GameObject("root");
 }
 
 Application::~Application()
@@ -140,13 +140,11 @@ void Application::OnUpdate(float dt)
 
 	m_Renderer->UpdateCamera(m_Camera);
 	m_RootNode->Update();
-
-	m_Renderer->Update(m_RootNode, dt);
 }
 
 void Application::OnRender(float dt)
 {
-	m_Renderer->Render(m_RootNode);
+	m_Renderer->Render(m_RootNode, dt);
 	m_GUI->Render(m_RootNode, m_ModelManager, m_AnimationManager);
 }
 

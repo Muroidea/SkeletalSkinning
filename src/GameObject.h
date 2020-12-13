@@ -41,8 +41,7 @@ public:
 	GameObject(std::string name = "GameObject", Model * model = nullptr, AnimationState* animationState = nullptr);
 	~GameObject();
 
-	void Update(bool dirtyFlag = false);
-	void Update(bool dirtyFlag, const glm::mat4& parent);
+	void Update(bool dirtyFlag = false, const glm::mat4& parent = glm::mat4(1.0f));
 	void AddChild(GameObject* child);
 	void SetParent(GameObject* parent);
 	void RemoveChild();

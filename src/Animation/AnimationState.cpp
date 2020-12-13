@@ -2,19 +2,13 @@
 
 #include <imgui.h>
 
-AnimationState::AnimationState(Animation* animation, int numOfBones)
+AnimationState::AnimationState(Animation* animation)
 {
     m_Animation = animation;
     m_Enabled = false;
     m_Loop = false;
     m_LocalTime = 0.0f;
     m_TimeScale = 1.0f;
-
-    for (int i = 0; i < numOfBones; i++)
-    {
-        m_Transforms.push_back(glm::mat4(1.0f));
-        m_FinalTransforms.push_back(glm::mat4(1.0f));
-    }
 }
 
 AnimationState::~AnimationState()
@@ -27,7 +21,6 @@ void AnimationState::SetAnimation(Animation* animation)
     m_Animation = animation;
     m_Enabled = false;
     m_Loop = false;
-    m_Dirty = true;
     m_LocalTime = 0.0f;
 }
 
@@ -36,15 +29,9 @@ Animation* AnimationState::GetAnimation() const
     return m_Animation;
 }
 
-std::vector<glm::mat4>& AnimationState::GetTranforms()
-{
-    return m_Transforms;
-}
-
 void AnimationState::SetEnabled(bool enabled)
 {
     m_Enabled = enabled;
-    m_Dirty = true;
 }
 
 bool AnimationState::GetEnabled() const
@@ -55,7 +42,6 @@ bool AnimationState::GetEnabled() const
 void AnimationState::SetLoop(bool enabled)
 {
     m_Loop = enabled;
-    m_Dirty = true;
 }
 
 bool AnimationState::GetLoop() const
@@ -69,31 +55,12 @@ bool AnimationState::HasEnded() const
         return true;
 }
 
-void AnimationState::SetDirty(bool dirty)
-{
-    m_Dirty = dirty;
-}
-
-bool AnimationState::IsDirty()
-{
-    if (m_Dirty)
-    {
-        m_Dirty = !m_Dirty;
-        return !m_Dirty;
-    }
-    else
-    {
-        return m_Dirty;
-    }
-}
-
 void AnimationState::AddTime(float deltaTime)
 {
     if (!m_Enabled) return;
     // if m_Scale < 0.0f than reverse
 
     m_LocalTime += deltaTime * m_TimeScale * m_Animation->GetTicksPerSecond();
-    m_Dirty = true;
 
     if (m_Animation->GetDuration() <= m_LocalTime && !m_Loop)
     {
@@ -107,7 +74,6 @@ void AnimationState::AddTime(float deltaTime)
 void AnimationState::SetTime(float time)
 {
     m_LocalTime = time;
-    m_Dirty = true;
 }
 
 float AnimationState::GetTime() const
@@ -169,9 +135,7 @@ void AnimationState::RenderGUI()
 
         ImGui::NewLine();
 
-        ImGui::DragFloat("Time scale", &m_TimeScale, 0.1f, 0.1f, 20.0f, "%.1f", ImGuiSliderFlags_None);
-
-        if (ImGui::SliderFloat("Time in ticks", &m_LocalTime, 0.0f, m_Animation->GetDuration(), "%.1f"))
-            m_Dirty = true;
+		ImGui::DragFloat("Time scale", &m_TimeScale, 0.1f, 0.1f, 20.0f, "%.1f", ImGuiSliderFlags_None);
+		ImGui::SliderFloat("Time in ticks", &m_LocalTime, 0.0f, m_Animation->GetDuration(), "%.1f");
     }
 }

@@ -26,11 +26,8 @@ public:
     ~Renderer();
 
     bool Init();
-    void Render(GameObject *rootNode); 
-    void RenderRecursive(GameObject* node);
-
-    void Update(GameObject* rootNode, double deltaTime);
-    void UpdateRecursive(GameObject* node, double deltaTime);
+    void Render(GameObject *rootNode, double deltaTime);
+    void RenderRecursive(GameObject* node, double deltaTime);
 
     void Resize(unsigned int width, unsigned int height);
     void UpdateCamera(Camera *camera);

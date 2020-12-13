@@ -255,7 +255,7 @@ void GUI::Resize(unsigned int width, unsigned int height)
     m_Height = height;
 }
 
-bool GUI::DrawVec3(const std::string & labelID, glm::vec3 & vector)
+bool GUI::DrawVec3(const std::string & labelID, glm::vec3 & vector, float moveStep)
 {
 	bool changed = false;
 	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -275,7 +275,7 @@ bool GUI::DrawVec3(const std::string & labelID, glm::vec3 & vector)
 	ImGui::PopStyleColor(3);
 
 	ImGui::SameLine();
-	if (ImGui::DragFloat("##X", &vector.x, 0.1f, 0.0f, 0.0f, "%.2f"))
+	if (ImGui::DragFloat("##X", &vector.x, moveStep, 0.0f, 0.0f, "%.2f"))
 		changed = true;
 	
 	ImGui::PopItemWidth();
@@ -289,7 +289,7 @@ bool GUI::DrawVec3(const std::string & labelID, glm::vec3 & vector)
 	ImGui::PopStyleColor(3);
 
 	ImGui::SameLine();
-	if (ImGui::DragFloat("##Y", &vector.y, 0.1f, 0.0f, 0.0f, "%.2f"))
+	if (ImGui::DragFloat("##Y", &vector.y, moveStep, 0.0f, 0.0f, "%.2f"))
 		changed = true;
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
@@ -302,7 +302,7 @@ bool GUI::DrawVec3(const std::string & labelID, glm::vec3 & vector)
 	ImGui::PopStyleColor(3);
 
 	ImGui::SameLine();
-	if (ImGui::DragFloat("##Z", &vector.z, 0.1f, 0.0f, 0.0f, "%.2f"))
+	if (ImGui::DragFloat("##Z", &vector.z, moveStep, 0.0f, 0.0f, "%.2f"))
 		changed = true;
 	ImGui::PopItemWidth();
 
