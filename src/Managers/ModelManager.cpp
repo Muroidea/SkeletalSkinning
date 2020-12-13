@@ -1,7 +1,5 @@
 #include "ModelManager.h"
 
-#include <imgui.h>
-
 ModelManager::ModelManager(std::string loadPath)
 	: Manager(loadPath)
 {
@@ -24,22 +22,4 @@ bool ModelManager::Load(std::string filename)
     m_Dictionary[name] = newModel;
 
     return true;
-}
-
-void ModelManager::RenderGUI()
-{
-	float width = ImGui::GetWindowWidth();
-	for (auto model : m_Dictionary)
-	{
-		ImGui::Button(model.first.c_str(), ImVec2(width, 20.0f));
-
-		long long address = reinterpret_cast<long long>(model.second);
-
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-		{
-			ImGui::SetDragDropPayload("Model", &address, sizeof(long long));
-			ImGui::Text("%s", model.second->GetName().c_str());
-			ImGui::EndDragDropSource();
-		}
-	}
 }

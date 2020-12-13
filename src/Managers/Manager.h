@@ -21,6 +21,8 @@ public:
 	virtual bool Load(std::string filename) = 0;
 
 	std::size_t Size();
+
+	friend class ManagerGUI;
 };
 
 template <typename T>
@@ -58,4 +60,4 @@ std::size_t Manager<T>::Size()
 	return m_Dictionary.size();
 }
 
-#endif
+#endif // !MANAGER_H

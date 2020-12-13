@@ -11,7 +11,6 @@ public:
 	~AnimationManager();
 
 	virtual bool Load(std::string filename) override;
-	void RenderGUI();
 };
 
 #endif // !ANIMATIONMANAGER_H

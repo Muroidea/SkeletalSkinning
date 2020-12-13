@@ -1,10 +1,5 @@
 #include "GameObject.h"
 
-#include "GUI/GUI.h"
-#include <imgui.h>
-
-#include <glm/gtx/euler_angles.hpp>
-
 unsigned int GameObject::s_Counter = 0;
 
 GameObject::GameObject(std::string name, Model* model, AnimationState* animationState)
@@ -30,13 +25,8 @@ GameObject::~GameObject()
 
 void GameObject::AddChild(GameObject* child)
 {
-	child->SetParent(this);
+	child->m_Parent = this;
 	m_Children.push_back(child);
-}
-
-void GameObject::SetParent(GameObject * parent)
-{
-	m_Parent = parent;
 }
 
 void GameObject::RemoveChild()
@@ -143,98 +133,6 @@ void GameObject::SetEnabled(bool enabled)
 bool GameObject::GetEnabled() const
 {
 	return m_Enabled;
-}
-
-void GameObject::DrawTreeGUIRoot(GameObject *&selectedNode)
-{
-    for (int i = 0; i < m_Children.size(); i++)
-    {
-		m_Children[i]->DrawTreeGUIRecursive(selectedNode);
-    }
-}
-
-void GameObject::DrawTreeGUIRecursive(GameObject *&selectedNode)
-{
-	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-	ImGuiTreeNodeFlags nodeFlags = baseFlags;
-	bool isSelected = false;
-
-	if (selectedNode && this) isSelected = *selectedNode == *this;
-	if (isSelected) nodeFlags |= ImGuiTreeNodeFlags_Selected;
-
-	if (GetNumChildren() > 0)
-	{
-		bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)this, nodeFlags, "%s", m_Name.c_str());
-
-		if (ImGui::IsItemClicked())
-			selectedNode = this;
-
-		if (nodeOpen)
-		{
-			for (int i = 0; i < m_Children.size(); i++)
-			{
-				m_Children[i]->DrawTreeGUIRecursive(selectedNode);
-			}
-			ImGui::TreePop();
-		}
-	}
-	else
-	{
-		nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-		ImGui::TreeNodeEx((void*)(intptr_t)this, nodeFlags, "%s", m_Name.c_str());
-
-		if (ImGui::IsItemClicked())
-			selectedNode = this;
-	}
-}
-
-void GameObject::DrawNodeGUI()
-{
-	glm::vec3 position = GetLocalPosition();
-	glm::vec3 rotation = GetLocalRotation();
-	glm::vec3 scale = GetLocalScale();
-
-	float float_low = -1000000.0f, float_high = 1000000.0f;
-
-	char buffer[25]; 
-	strcpy(buffer, m_Name.c_str());
-	ImGui::PushItemWidth(ImGui::CalcItemWidth() / 2.0f);
-	if(ImGui::InputText("##Name", buffer, (int)(sizeof(buffer)/sizeof(*buffer))))
-		m_Name = buffer;
-	ImGui::PopItemWidth();
-
-	ImGui::SameLine();
-
-	if (ImGui::Button("Add child", ImVec2(80.0f, 20.0f)))
-		AddChild(new GameObject());
-
-	ImGui::Dummy(ImVec2(0.0f, 5.0f));
-
-	ImGui::Checkbox(" Enable/Disable", &m_Enabled); 
-		
-	ImGui::NewLine();
-	ImGui::Text("Local transform: "); ImGui::SameLine(); 
-	if (ImGui::Button("Reset", ImVec2(80.0f, 20.0f)))
-	{
-		SetLocalPosition(glm::vec3(0.0f));
-		SetLocalRotation(glm::vec3(0.0f));
-		SetLocalScale(glm::vec3(1.0f));
-	}
-	
-	ImGui::Dummy(ImVec2(0.0f, 5.0f));
-
-	if (GUI::DrawVec3("Position", position, 1.0f))
-		SetLocalPosition(position);
-
-	ImGui::Dummy(ImVec2(0.0f, 5.0f));
-
-	if (GUI::DrawVec3("Rotation", rotation, 0.2f))
-		SetLocalRotation(rotation);
-
-	ImGui::Dummy(ImVec2(0.0f, 5.0f));
-
-	if (GUI::DrawVec3("Scale", scale, 0.1f))
-		SetLocalScale(scale);
 }
 
 bool GameObject::operator==(const GameObject& other)

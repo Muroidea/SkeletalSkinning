@@ -4,8 +4,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <imgui.h>
-
 AnimationManager::AnimationManager(std::string loadPath)
 	: Manager(loadPath)
 {
@@ -38,22 +36,4 @@ bool AnimationManager::Load(std::string filename)
     }
 
 	return true;
-}
-
-void AnimationManager::RenderGUI()
-{
-    float width = ImGui::GetWindowWidth();
-    for (auto anim : m_Dictionary)
-    {
-        ImGui::Button(anim.first.c_str(), ImVec2(width, 20.0f));
-
-        long long address = reinterpret_cast<long long>(anim.second);
-
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-        {
-            ImGui::SetDragDropPayload("Animation", &address, sizeof(long long));
-            ImGui::Text("%s", anim.second->GetName().c_str());
-            ImGui::EndDragDropSource();
-        }
-    }
 }

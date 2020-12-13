@@ -6,13 +6,13 @@
 #define GUI_H
 
 #include "Window.h"
-#include "GameObject.h"
-#include "Managers/ModelManager.h"
-#include "Managers/AnimationManager.h"
+#include "ManagerGUI.h"
+#include "GameObjectGUI.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui/imgui_internal.h>
 
 class GUI
 {
@@ -34,9 +34,6 @@ public:
     void Switch();
 
     void Resize(unsigned int width, unsigned int height);
-
-	static bool DrawVec3(const std::string& labelID, glm::vec3& vector, float moveStep);
 };
-
 
 #endif // !GUI_H

@@ -36,7 +36,7 @@ public:
 	void SetScale(float scale);
 	float GetScale() const;
 
-	void RenderGUI();
+	friend class GameObjectGUI;
 };
 
 #endif // !ANIMATIONSTATE_H

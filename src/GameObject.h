@@ -9,8 +9,8 @@
 
 #include <vector>
 
-#include "Model.h"
 #include "Animation/AnimationState.h"
+#include "Model.h"
 
 class GameObject
 {
@@ -42,10 +42,11 @@ public:
 	~GameObject();
 
 	void Update(bool dirtyFlag = false, const glm::mat4& parent = glm::mat4(1.0f));
+
 	void AddChild(GameObject* child);
-	void SetParent(GameObject* parent);
-	void RemoveChild();
 	void SetToRemove();
+
+
 	void SetAnimationState(AnimationState* animationState);
 
 	int GetNumChildren();
@@ -66,11 +67,12 @@ public:
 	bool GetEnabled() const;
 	void SetEnabled(bool enabled);
 
-	void DrawTreeGUIRoot(GameObject *&selectedNode);
-	void DrawTreeGUIRecursive(GameObject *&selectedNode);
-	void DrawNodeGUI();
-
 	bool operator==(const GameObject& other);
+
+private:
+	void RemoveChild();
+
+	friend class GameObjectGUI;
 };
 
 #endif // !GAMEOBJECT_H
