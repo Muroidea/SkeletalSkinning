@@ -16,16 +16,21 @@ class GameObject
 {
 private:
 	static unsigned int s_Counter;
-
 	unsigned int m_ID;
 
-	glm::mat4 m_Local = glm::mat4(1.0f);
+	std::string m_Name;
+
+	glm::vec3 m_LocalPosition = glm::vec3(0.0f);
+	glm::vec3 m_LocalRotation = glm::vec3(0.0f);
+	glm::vec3 m_LocalScale = glm::vec3(1.0f);
+
 	glm::mat4 m_Global = glm::mat4(1.0f);
 
 	bool m_DirtyFlag = true;
 	bool m_Enabled = true;
 
-	GameObject* m_Parent;
+	GameObject* m_Parent = nullptr;
+	GameObject* m_ChildToRemove = nullptr;
 	std::vector<GameObject*> m_Children;
 
 public:
@@ -33,12 +38,15 @@ public:
 	AnimationState *m_AnimationState;
 
 public:
-	GameObject(GameObject* parent, Model* model, AnimationState* animationState);
+	GameObject(std::string name = "GameObject", Model * model = nullptr, AnimationState* animationState = nullptr);
 	~GameObject();
 
 	void Update(bool dirtyFlag = false);
 	void Update(bool dirtyFlag, const glm::mat4& parent);
 	void AddChild(GameObject* child);
+	void SetParent(GameObject* parent);
+	void RemoveChild();
+	void SetToRemove();
 	void SetAnimationState(AnimationState* animationState);
 
 	int GetNumChildren();
@@ -47,16 +55,14 @@ public:
 	glm::mat4 GetLocalMatrix();
 	glm::mat4 GetGlobalMatrix();
 
-	void SetLocalTransform(glm::mat4 transform);
-
 	glm::vec3 GetLocalPosition();
 	void SetLocalPosition(glm::vec3 position);
 
-	glm::quat GetLocalRotation();
-	void SetLocalRotation(glm::quat rotation);
+	glm::vec3 GetLocalRotation();
+	void SetLocalRotation(glm::vec3 rotation);
 
 	glm::vec3 GetLocalScale();
-	void SetLocalScale(glm::vec3 localScale);
+	void SetLocalScale(glm::vec3 scale);
 
 	bool GetEnabled() const;
 	void SetEnabled(bool enabled);

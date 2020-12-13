@@ -1,11 +1,14 @@
 #include "GameObject.h"
 
+#include "GUI/GUI.h"
 #include <imgui.h>
+
+#include <glm/gtx/euler_angles.hpp>
 
 unsigned int GameObject::s_Counter = 0;
 
-GameObject::GameObject(GameObject* parent, Model* model, AnimationState* animationState)
-	: m_Parent(parent), m_Model(model)
+GameObject::GameObject(std::string name, Model* model, AnimationState* animationState)
+	: m_Name(name), m_Model(model)
 {
     m_ID = s_Counter;
     s_Counter++;
@@ -20,11 +23,32 @@ GameObject::~GameObject()
 {
 	if (m_AnimationState)
 		delete m_AnimationState;
+
+	for (int i = 0; i < m_Children.size(); i++)
+		delete m_Children[i];
 }
 
 void GameObject::AddChild(GameObject* child)
 {
+	child->SetParent(this);
 	m_Children.push_back(child);
+}
+
+void GameObject::SetParent(GameObject * parent)
+{
+	m_Parent = parent;
+}
+
+void GameObject::RemoveChild()
+{
+	m_Children.erase(std::find(m_Children.begin(), m_Children.end(), m_ChildToRemove));
+	delete m_ChildToRemove;
+	m_ChildToRemove = nullptr;
+}
+
+void GameObject::SetToRemove()
+{
+	m_Parent->m_ChildToRemove = this;
 }
 
 void GameObject::SetAnimationState(AnimationState* animationState)
@@ -37,12 +61,15 @@ void GameObject::SetAnimationState(AnimationState* animationState)
 
 void GameObject::Update(bool dirtyFlag)
 {
+	if (m_ChildToRemove)
+		RemoveChild();
+
 	if (!m_Enabled) return;
 
 	dirtyFlag |= m_DirtyFlag;
 	if (dirtyFlag)
 	{
-		m_Global = m_Local;
+		m_Global = GetLocalMatrix();
 		m_DirtyFlag = false;
 	}
 
@@ -52,12 +79,15 @@ void GameObject::Update(bool dirtyFlag)
 
 void GameObject::Update(bool dirtyFlag, const glm::mat4& parent)
 {
+	if (m_ChildToRemove)
+		RemoveChild();
+
 	if (!m_Enabled) return;
 
 	dirtyFlag |= m_DirtyFlag;
 	if (dirtyFlag)
 	{
-		m_Global = m_Local * parent;
+		m_Global = GetLocalMatrix() * parent;
 		m_DirtyFlag = false;
 	}
 
@@ -77,7 +107,11 @@ const std::vector<GameObject*>& GameObject::GetChildren()
 
 glm::mat4 GameObject::GetLocalMatrix()
 {
-	return m_Local;
+	glm::mat4 transformation = glm::translate(glm::mat4(1.0f), m_LocalPosition);
+	transformation *= glm::toMat4(glm::quat(glm::radians(m_LocalRotation)));
+	transformation = glm::scale(transformation, m_LocalScale);
+
+	return transformation;
 }
 
 glm::mat4 GameObject::GetGlobalMatrix()
@@ -85,68 +119,36 @@ glm::mat4 GameObject::GetGlobalMatrix()
 	return m_Global;
 }
 
-void GameObject::SetLocalTransform(glm::mat4 transform)
-{
-	m_Local = transform;
-	m_DirtyFlag = true;
-}
-
 glm::vec3 GameObject::GetLocalPosition()
 {
-	return glm::vec3(m_Local[3]);
+	return glm::vec3(m_LocalPosition);
 }
 
 void GameObject::SetLocalPosition(glm::vec3 position)
 {
-	m_Local[3][0] = position.x;
-	m_Local[3][1] = position.y;
-	m_Local[3][2] = position.z;
-
+	m_LocalPosition = position;
 	m_DirtyFlag = true;
 }
 
-glm::quat GameObject::GetLocalRotation()
+glm::vec3 GameObject::GetLocalRotation()
 {
-	glm::mat3 rotation = glm::mat3(m_Local);
-	glm::vec3 scale = GetLocalScale();
-
-	rotation[0] /= scale.x;
-	rotation[1] /= scale.y;
-	rotation[2] /= scale.z;
-
-	return glm::normalize(glm::quat_cast(rotation));
+	return m_LocalRotation;
 }
 
-void GameObject::SetLocalRotation(glm::quat rotation)
+void GameObject::SetLocalRotation(glm::vec3 rotation)
 {
-	rotation = glm::normalize(rotation);
-	glm::mat4 rot = glm::toMat4(rotation);
-	glm::vec3 scale = GetLocalScale();
-
-	m_Local[0] = rot[0] * scale.x;
-	m_Local[1] = rot[1] * scale.y;
-	m_Local[2] = rot[2] * scale.z;
-
+	m_LocalRotation = rotation;
 	m_DirtyFlag = true;
 }
 
 glm::vec3 GameObject::GetLocalScale()
 {
-	float x = glm::length(m_Local[0]);
-	float y = glm::length(m_Local[1]);
-	float z = glm::length(m_Local[2]);
-
-	return glm::vec3(x, y, z);
+	return m_LocalScale;
 }
 
-void GameObject::SetLocalScale(glm::vec3 localScale)
+void GameObject::SetLocalScale(glm::vec3 scale)
 {
-	auto current = GetLocalScale();
-
-	m_Local[0] *= localScale.x / current.x;
-	m_Local[1] *= localScale.y / current.y;
-	m_Local[2] *= localScale.z / current.z;
-
+	m_LocalScale = scale;
 	m_DirtyFlag = true;
 }
 
@@ -163,26 +165,9 @@ bool GameObject::GetEnabled() const
 
 void GameObject::DrawTreeGUIRoot(GameObject *&selectedNode)
 {
-	ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-	ImGuiTreeNodeFlags nodeFlags = baseFlags;
-	bool isSelected = false;
-	if (selectedNode && this)
-		isSelected = *selectedNode == *this;
-
-	if (isSelected) nodeFlags |= ImGuiTreeNodeFlags_Selected;
-
-	ImGui::SetNextItemOpen(true);
-    if (ImGui::TreeNodeEx((void*)(intptr_t)this, nodeFlags, "RootNode"))
+    for (int i = 0; i < m_Children.size(); i++)
     {
-		if (ImGui::IsItemClicked())
-			selectedNode = this;
-
-        for (int i = 0; i < m_Children.size(); i++)
-        {
-			m_Children[i]->DrawTreeGUIRecursive(selectedNode);
-        }
-
-        ImGui::TreePop();
+		m_Children[i]->DrawTreeGUIRecursive(selectedNode);
     }
 }
 
@@ -197,7 +182,7 @@ void GameObject::DrawTreeGUIRecursive(GameObject *&selectedNode)
 
 	if (GetNumChildren() > 0)
 	{
-		bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)this, nodeFlags, "%s %d", m_Model->GetName().c_str(), m_ID);
+		bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)this, nodeFlags, "%s", m_Name.c_str());
 
 		if (ImGui::IsItemClicked())
 			selectedNode = this;
@@ -214,7 +199,7 @@ void GameObject::DrawTreeGUIRecursive(GameObject *&selectedNode)
 	else
 	{
 		nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-		ImGui::TreeNodeEx((void*)(intptr_t)this, nodeFlags, "%s %d", m_Model->GetName().c_str(), m_ID);
+		ImGui::TreeNodeEx((void*)(intptr_t)this, nodeFlags, "%s", m_Name.c_str());
 
 		if (ImGui::IsItemClicked())
 			selectedNode = this;
@@ -224,69 +209,49 @@ void GameObject::DrawTreeGUIRecursive(GameObject *&selectedNode)
 void GameObject::DrawNodeGUI()
 {
 	glm::vec3 position = GetLocalPosition();
-	glm::quat rotation = GetLocalRotation();
+	glm::vec3 rotation = GetLocalRotation();
 	glm::vec3 scale = GetLocalScale();
-
-	bool positionChanged = false;
-	bool rotationChanged = false;
-	bool scaleChanged = false;
 
 	float float_low = -1000000.0f, float_high = 1000000.0f;
 
-	ImGui::Checkbox(" Enable/Disable", &m_Enabled);
+	char buffer[25]; 
+	strcpy(buffer, m_Name.c_str());
+	ImGui::PushItemWidth(ImGui::CalcItemWidth() / 2.0f);
+	if(ImGui::InputText("##Name", buffer, (int)(sizeof(buffer)/sizeof(*buffer))))
+		m_Name = buffer;
+	ImGui::PopItemWidth();
 
+	ImGui::SameLine();
+
+	if (ImGui::Button("Add child", ImVec2(80.0f, 20.0f)))
+		AddChild(new GameObject());
+
+	ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+	ImGui::Checkbox(" Enable/Disable", &m_Enabled); 
+		
 	ImGui::NewLine();
 	ImGui::Text("Local transform: "); ImGui::SameLine(); 
 	if (ImGui::Button("Reset", ImVec2(80.0f, 20.0f)))
-		SetLocalTransform(glm::mat4(1.0f));
+	{
+		SetLocalPosition(glm::vec3(0.0f));
+		SetLocalRotation(glm::vec3(0.0f));
+		SetLocalScale(glm::vec3(1.0f));
+	}
 	
-	ImGui::NewLine();
-	ImGui::Text("Position: ");
+	ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-	ImGui::PushID("Position");
-	ImGui::DragScalar("X ", ImGuiDataType_Float, &position.x, 1.0f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) positionChanged = true;
-	ImGui::DragScalar("Y ", ImGuiDataType_Float, &position.y, 1.0f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) positionChanged = true;
-	ImGui::DragScalar("Z ", ImGuiDataType_Float, &position.z, 1.0f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) positionChanged = true;
-	ImGui::PopID();
-
-
-	ImGui::NewLine();
-	ImGui::Text("Rotation: ");
-
-	ImGui::PushID("Rotation");
-	ImGui::DragScalar("W ", ImGuiDataType_Float, &rotation.w, 0.1f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) rotationChanged = true;
-	ImGui::DragScalar("X ", ImGuiDataType_Float, &rotation.x, 0.1f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) rotationChanged = true;
-	ImGui::DragScalar("Y ", ImGuiDataType_Float, &rotation.y, 0.1f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) rotationChanged = true;
-	ImGui::DragScalar("Z ", ImGuiDataType_Float, &rotation.z, 0.1f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) rotationChanged = true;
-	ImGui::PopID();
-	
-
-	ImGui::NewLine();
-	ImGui::Text("Scale: ");
-
-	ImGui::PushID("Scale");
-	ImGui::DragScalar("X ", ImGuiDataType_Float, &scale.x, 0.1f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) scaleChanged = true;
-	ImGui::DragScalar("Y ", ImGuiDataType_Float, &scale.y, 0.1f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) scaleChanged = true;
-	ImGui::DragScalar("Z ", ImGuiDataType_Float, &scale.z, 0.1f, &float_low, &float_high, "%f");
-	if (ImGui::IsItemEdited()) scaleChanged = true;
-	ImGui::PopID();
-
-	if (positionChanged)
+	if (GUI::DrawVec3("Position", position))
 		SetLocalPosition(position);
 
-	if (rotationChanged)
+	ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+	if (GUI::DrawVec3("Rotation", rotation))
 		SetLocalRotation(rotation);
 
-	if (scaleChanged)
+	ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+	if (GUI::DrawVec3("Scale", scale))
 		SetLocalScale(scale);
 }
 

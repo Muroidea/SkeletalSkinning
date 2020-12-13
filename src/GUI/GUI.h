@@ -22,7 +22,7 @@ private:
 
     bool m_Enabled = true;
 
-    GameObject *m_SelectedNode = nullptr;
+	GameObject *m_SelectedNode = nullptr;
 
 public:
     GUI();
@@ -34,6 +34,8 @@ public:
     void Switch();
 
     void Resize(unsigned int width, unsigned int height);
+
+	static bool DrawVec3(const std::string& labelID, glm::vec3& vector);
 };
 
 

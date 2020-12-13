@@ -74,7 +74,7 @@ void Renderer::Update(GameObject *rootNode, double deltaTime)
 
 void Renderer::UpdateRecursive(GameObject* node, double deltaTime)
 {
-    if (!node->GetEnabled()) return;
+    if (!node->GetEnabled() || !node->m_Model) return;
     auto& animState = node->m_AnimationState;
 
     animState->AddTime(deltaTime);

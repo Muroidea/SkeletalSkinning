@@ -11,6 +11,7 @@ public:
 	~ModelManager();
 
 	virtual bool Load(std::string filename) override;
+	void RenderGUI();
 };
 
 #endif // !MODELMANAGER_H

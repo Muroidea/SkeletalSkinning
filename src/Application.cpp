@@ -30,7 +30,7 @@ Application::Application(std::string title, unsigned int width, unsigned int hei
 	m_ModelManager = new ModelManager("../resources/models/");
 	m_AnimationManager = new AnimationManager("../resources/animations/");
 
-	m_RootNode = new GameObject(nullptr, nullptr, nullptr);
+	m_RootNode = new GameObject("root", nullptr, nullptr);
 }
 
 Application::~Application()
@@ -50,18 +50,9 @@ void Application::InitScene()
 
 	//Akai animation
 	m_AnimationManager->Load("Akai_StandingRunForward.fbx");
-
-	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Akai"), nullptr));
-	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Akai"), nullptr));
-	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Warrok"), nullptr));
-	m_RootNode->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Warrok"), nullptr));
-	/*
-	auto& vec = m_RootNode->GetChildren();
-	vec[0]->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Warrok"), nullptr));
-
-	auto& vec2 = vec[0]->GetChildren();
-	vec2[0]->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Warrok"), nullptr));
-	vec2[0]->AddChild(new GameObject(m_RootNode, m_ModelManager->Get("Warrok"), nullptr));*/
+	
+	m_RootNode->AddChild(new GameObject("Akai 1", m_ModelManager->Get("Akai")));
+	m_RootNode->AddChild(new GameObject("Warrok 1", m_ModelManager->Get("Warrok")));
 }
 
 void Application::Run()

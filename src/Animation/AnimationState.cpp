@@ -128,8 +128,10 @@ float AnimationState::GetScale() const
 void AnimationState::RenderGUI()
 {
     ImGui::Text("Animation state: "); ImGui::SameLine();
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 1));
     if (m_Animation && ImGui::Button("Clear", ImVec2(50.0f, 15.0f)))
         SetAnimation(nullptr);
+	ImGui::PopStyleVar(1);
 
     ImGui::NewLine();
 
