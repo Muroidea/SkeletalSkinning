@@ -18,14 +18,22 @@ private:
     const GLenum m_BufferType;
 
 public:
-    Buffer(unsigned int elementCount, size_t elementSize, const void *data, GLenum bufferType, GLenum usage = GL_STATIC_DRAW);
+    Buffer(unsigned int elementCount, size_t size, const void *data, GLenum bufferType, GLenum usage = GL_STATIC_DRAW);
+    Buffer(size_t size, const void* data, GLenum bufferType, GLenum usage = GL_STATIC_DRAW);
     ~Buffer();
+
     void Bind() const;
     void Unbind() const;
 
-    void UploadData(unsigned int offset, unsigned int elementCount, const void *data);
+    void UploadData(const void* data, unsigned int offset = 0, unsigned int elementCount = 1);
+    void UploadDataInBytes(const void* data, unsigned int offset, unsigned int size);
+
+    void SetBufferBindingID(unsigned int binding);
 
     unsigned int GetCount() const;
+
+private:
+    void Init(const void* data, GLenum usage);
 };
 
 

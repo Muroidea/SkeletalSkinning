@@ -9,12 +9,15 @@ layout (location = 4) in vec4 aWeights;
 out vec3 Normal;
 out vec2 TexCoords;
 
-uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
 const int MAX_BONES = 100;
-uniform mat4[MAX_BONES] Bones;
+layout (std140) uniform PerModelData
+{
+	mat4[MAX_BONES] Bones;
+	mat4 Model;
+};
 
 void main()
 {

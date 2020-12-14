@@ -101,12 +101,15 @@ void GameObjectGUI::DrawNode(GameObject *node)
 
 	ImGui::NewLine();
 	ImGui::Text("Local transform: "); ImGui::SameLine();
-	if (ImGui::Button("Reset", ImVec2(80.0f, 20.0f)))
+
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 1.0f));
+	if (ImGui::Button("Reset", ImVec2(80.0f, 15.0f)))
 	{
 		node->SetLocalPosition(glm::vec3(0.0f));
 		node->SetLocalRotation(glm::vec3(0.0f));
 		node->SetLocalScale(glm::vec3(1.0f));
 	}
+	ImGui::PopStyleVar(1);
 
 	ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
@@ -124,71 +127,102 @@ void GameObjectGUI::DrawNode(GameObject *node)
 		node->SetLocalScale(scale);
 }
 
-void GameObjectGUI::DrawModel(GameObject * node)
+void GameObjectGUI::DrawModel(GameObject* node)
 {
+	bool hasModel = (node->m_Model) ? true : false;
 
-	ImGui::Text("Model: "); ImGui::SameLine();
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 1));
-	if (node->m_Model && ImGui::Button("Clear", ImVec2(50.0f, 15.0f)))
-		node->m_Model = nullptr;
-	ImGui::PopStyleVar(1);
+	ImGui::Text("Model: ");
 
-	ImGui::NewLine();
+	{ // Model slot
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ ImGui::GetWindowContentRegionWidth() * 0.1f, 0 });
 
-	if (node->m_Model)
-		ImGui::Button(node->m_Model->GetName().c_str(), ImVec2(ImGui::GetWindowContentRegionWidth(), 20.0f));
-	else
-	{
-		ImGui::NewLine();
-		ImGui::Button("Model (empty)", ImVec2(ImGui::GetWindowContentRegionWidth(), 20.0f));
-	}
+		std::string buttonLabel = (hasModel) ? node->m_Model->GetName() : "Model (empty)";
+		ImGui::Button(buttonLabel.c_str(), ImVec2(ImGui::GetWindowContentRegionWidth() * 0.6f, 20.0f));
 
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Model"))
+		if (ImGui::BeginDragDropTarget())
 		{
-			IM_ASSERT(payload->DataSize == sizeof(long long));
-			long long address = *(const long long*)payload->Data;
-			node->m_Model = reinterpret_cast<Model*>(address);
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Model"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(long long));
+				long long address = *(const long long*)payload->Data;
+				node->m_Model = reinterpret_cast<Model*>(address);
+			}
+			ImGui::EndDragDropTarget();
 		}
-		ImGui::EndDragDropTarget();
 	}
+	
+	ImGui::SameLine();
+
+	{ // Clear button
+		if (!hasModel)
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+		}
+
+		if (ImGui::Button("Clear", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.2f, 20.0f)))
+			node->m_Model = nullptr;
+
+		if (!hasModel)
+		{
+			ImGui::PopItemFlag();
+			ImGui::PopStyleVar(1);
+		}
+	}
+
+	ImGui::PopStyleVar(1);
 }
 
 void GameObjectGUI::DrawAnimationState(GameObject * node)
 {
 	AnimationState *animState = node->m_AnimationState;
 	Animation *animation = animState->GetAnimation();
+	bool hasAnimation = (animation) ? true : false;
 
 	ImGui::Text("Animation state: "); ImGui::SameLine();
 
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 1));
-	if (animation && ImGui::Button("Clear", ImVec2(50.0f, 15.0f)))
-		animState->SetAnimation(nullptr);
-	ImGui::PopStyleVar(1);
-
 	ImGui::NewLine();
 
-	if (animation)
-		ImGui::Button(animation->GetName().c_str(), ImVec2(ImGui::GetWindowContentRegionWidth(), 20.0f));
-	else
-	{
-		ImGui::NewLine();
-		ImGui::Button("Animation (empty)", ImVec2(ImGui::GetWindowContentRegionWidth(), 20.0f));
-	}
+	{ // Animation slot
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ ImGui::GetWindowContentRegionWidth() * 0.1f, 0 });
 
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Animation"))
+		std::string buttonLabel = (hasAnimation) ? animation->GetName() : "Animation (empty)";
+		ImGui::Button(buttonLabel.c_str(), ImVec2(ImGui::GetWindowContentRegionWidth() * 0.6f, 20.0f));
+
+		if (ImGui::BeginDragDropTarget())
 		{
-			IM_ASSERT(payload->DataSize == sizeof(long long));
-			long long address = *(const long long*)payload->Data;
-			animState->SetAnimation(reinterpret_cast<Animation*>(address));
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Animation"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(long long));
+				long long address = *(const long long*)payload->Data;
+				animState->SetAnimation(reinterpret_cast<Animation*>(address));
+			}
+			ImGui::EndDragDropTarget();
 		}
-		ImGui::EndDragDropTarget();
 	}
 
-	if (animation)
+	ImGui::SameLine();
+
+	{ // Clear button
+		if (!hasAnimation)
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+		}
+
+		if (ImGui::Button("Clear", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.2f, 20.0f)))
+			animState->SetAnimation(nullptr);
+
+		if (!hasAnimation)
+		{
+			ImGui::PopItemFlag();
+			ImGui::PopStyleVar(1);
+		}
+	}
+	
+	ImGui::PopStyleVar(1);
+
+	if (hasAnimation)
 	{
 		ImGui::NewLine();
 
@@ -204,7 +238,7 @@ void GameObjectGUI::DrawAnimationState(GameObject * node)
 		ImGui::NewLine();
 
 		ImGui::DragFloat("Time scale", &animState->m_TimeScale, 0.1f, 0.1f, 20.0f, "%.1f", ImGuiSliderFlags_None);
-		ImGui::SliderFloat("Time in ticks", &animState->m_LocalTime, 0.0f, animState->m_Animation->GetDuration(), "%.1f");
+		ImGui::SliderFloat("Time in ticks", &animState->m_LocalTime, 0.0f, animation->GetDuration(), "%.1f");
 	}
 }
 

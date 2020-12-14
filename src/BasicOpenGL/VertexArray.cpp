@@ -19,23 +19,23 @@ void VertexArray::BindVertexBuffer(const Buffer &VBO, const VertexBufferLayout &
     Bind();
     VBO.Bind();
 
-    auto elements = VBL.GetAttributes();
+    auto attribute = VBL.GetAttributes();
     unsigned int m = 0;
-    for(int i = 0; i < elements.size(); i++)
+    for(int i = 0; i < attribute.size(); i++)
     {
-        if (ConvertVertexTypeToOpenGL(elements[i].type) == GL_FLOAT)
+        if (ConvertVertexTypeToOpenGL(attribute[i].type) == GL_FLOAT)
         {
-            glVertexAttribPointer(i, GetVertexTypeCount(elements[i].type), ConvertVertexTypeToOpenGL(elements[i].type),
-                elements[i].normalized, VBL.GetStride(), (const void*)(m));
+            glVertexAttribPointer(i, GetVertexTypeCount(attribute[i].type), ConvertVertexTypeToOpenGL(attribute[i].type),
+                attribute[i].normalized, VBL.GetStride(), (const void*)(m));
         }
-        else if (ConvertVertexTypeToOpenGL(elements[i].type) == GL_INT)
+        else if (ConvertVertexTypeToOpenGL(attribute[i].type) == GL_INT)
         {
-            glVertexAttribIPointer(i, GetVertexTypeCount(elements[i].type), ConvertVertexTypeToOpenGL(elements[i].type),
+            glVertexAttribIPointer(i, GetVertexTypeCount(attribute[i].type), ConvertVertexTypeToOpenGL(attribute[i].type),
                 VBL.GetStride(), (const void*)(m));
         }
 
         glEnableVertexAttribArray(i);
-        m += GetVertexTypeSize(elements[i].type);
+        m += GetVertexTypeSize(attribute[i].type);
     }
 }
 

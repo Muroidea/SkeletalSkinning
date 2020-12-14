@@ -19,6 +19,7 @@ class Renderer
 {
 private:
     Shader *m_ShaderModel;
+    Buffer *m_PerModelData;
     std::vector<glm::mat4> m_AnimationTransforms;
 
 public:

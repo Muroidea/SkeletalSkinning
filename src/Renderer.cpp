@@ -8,6 +8,7 @@
 Renderer::Renderer()
 {
     m_ShaderModel = nullptr;
+    m_PerModelData = nullptr;
 }
 
 Renderer::~Renderer()
@@ -18,12 +19,16 @@ Renderer::~Renderer()
 bool Renderer::Init()
 {
     m_ShaderModel = new Shader("../resources/shaders/VertexShaderModel.vs", "../resources/shaders/FragmentShaderModel.fs");
+    m_PerModelData = new Buffer(101, sizeof(glm::mat4), nullptr, GL_UNIFORM_BUFFER, GL_DYNAMIC_DRAW);
+
+    m_ShaderModel->SetBlockBinding(0, "PerModelData");
+    m_PerModelData->SetBufferBindingID(0);
 
     for (int i = 0; i < 100; i++)
         m_AnimationTransforms.push_back(glm::mat4(1.0f));
 
-    m_ShaderModel->SetUniformMat4("Bones", m_AnimationTransforms[0], m_AnimationTransforms.size());
-    
+    m_PerModelData->UploadData(m_AnimationTransforms.data());
+
     return true;
 }
 
@@ -52,8 +57,12 @@ void Renderer::RenderRecursive(GameObject *node, double deltaTime)
 		else
 			node->m_Model->m_Skeleton.GetTPoseTranformation(m_AnimationTransforms);
 
-        m_ShaderModel->SetUniformMat4("Model", node->GetGlobalMatrix());
-        m_ShaderModel->SetUniformMat4("Bones", *m_AnimationTransforms.data(), node->m_Model->GetNumBones());
+        m_PerModelData->UploadData(m_AnimationTransforms.data(), 0, node->m_Model->GetNumBones());
+        m_PerModelData->UploadData(&node->GetGlobalMatrix()[0][0], 100, 1);
+
+        //m_PerModelData->UploadDataInBytes(m_AnimationTransforms.data(), 0, node->m_Model->GetNumBones() * sizeof(glm::mat4));
+        //m_PerModelData->UploadDataInBytes(&node->GetGlobalMatrix()[0][0], 100 * sizeof(glm::mat4), sizeof(glm::mat4));
+
         node->m_Model->Render();
     }
 

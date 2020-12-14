@@ -97,6 +97,12 @@ void Shader::Unbind() const
     glUseProgram(0);
 }
 
+void Shader::SetBlockBinding(unsigned int binding, std::string blockName)
+{
+    unsigned int index = glGetUniformBlockIndex(m_ID, blockName.c_str());
+    glUniformBlockBinding(m_ID, index, binding);
+}
+
 void Shader::SetUniform1f(const std::string &name, float x)
 {
     glUniform1f(GetUniformLocation(name), x);

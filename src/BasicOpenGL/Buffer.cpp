@@ -4,8 +4,19 @@
 
 #include "Buffer.h"
 
-Buffer::Buffer(unsigned int elementCount, size_t elementSize, const void *data, GLenum bufferType, GLenum usage)
-        : m_ElementCount(elementCount), m_ElementSize(elementSize), m_BufferType(bufferType)
+Buffer::Buffer(unsigned int elementCount, size_t size, const void *data, GLenum bufferType, GLenum usage)
+        : m_ElementCount(elementCount), m_ElementSize(size), m_BufferType(bufferType)
+{
+    Init(data, usage);
+}
+
+Buffer::Buffer(size_t size, const void* data, GLenum bufferType, GLenum usage)
+    : m_ElementCount(1), m_ElementSize(size), m_BufferType(bufferType)
+{
+    Init(data, usage);
+}
+
+void Buffer::Init(const void* data, GLenum usage)
 {
     glGenBuffers(1, &m_ID);
     Bind();
@@ -33,10 +44,21 @@ unsigned int Buffer::GetCount() const
     return m_ElementCount;
 }
 
-void Buffer::UploadData(unsigned int offset, unsigned int elementCount, const void *data)
+void Buffer::UploadData(const void* data, unsigned int offsetCount, unsigned int elementCount)
 {
     Bind();
-    glBufferSubData(m_BufferType, offset, elementCount * m_ElementSize, data);
-
+    glBufferSubData(m_BufferType, offsetCount * m_ElementSize, elementCount * m_ElementSize, data);
     Unbind();
+}
+
+void Buffer::UploadDataInBytes(const void* data, unsigned int offset, unsigned int size)
+{
+    Bind();
+    glBufferSubData(m_BufferType, offset, size, data);
+    Unbind();
+}
+
+void Buffer::SetBufferBindingID(unsigned int binding)
+{
+    glBindBufferBase(m_BufferType, binding, m_ID);
 }

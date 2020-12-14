@@ -21,9 +21,7 @@ public:
 
     void Bind() const;
     void Unbind() const;
-    std::string LoadShader(const std::string& path);
-    unsigned int CompileShader(unsigned int type, const std::string& source);
-    unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader);
+    void SetBlockBinding(unsigned int binding, std::string blockName);
 
     void SetUniform1f(const std::string& name, float x);
     void SetUniform3f(const std::string &name, float x, float y, float z);
@@ -31,8 +29,14 @@ public:
     void SetUniformMat4(const std::string& name, const glm::mat4& matrix, int count = 1);
     void SetUniform1i(const std::string& name, int i);
 
-    int GetUniformLocation(const std::string& name);
     inline unsigned int GetID() const { return m_ID; };
+
+private:
+    std::string LoadShader(const std::string& path);
+    unsigned int CompileShader(unsigned int type, const std::string& source);
+    unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader);
+
+    int GetUniformLocation(const std::string& name);
 };
 
 

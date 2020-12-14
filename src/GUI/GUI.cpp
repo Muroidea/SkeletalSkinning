@@ -123,8 +123,8 @@ void GUI::Render(GameObject* rootNode, ModelManager* modelManager, AnimationMana
 
     ImGui::End();
 
-	bool show_demo_window = true;
-    ImGui::ShowDemoWindow(&show_demo_window);
+	//bool show_demo_window = true;
+    //ImGui::ShowDemoWindow(&show_demo_window);
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
