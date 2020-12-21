@@ -4,39 +4,21 @@ void Bone::SetOffset(glm::mat4 offset)
 {
     Offset = offset;
 
-    //glm::mat3x3 rot(offset);
-    //glm::vec3 tran(offset[3]);
-    //OffsetDQ = glm::fdualquat(glm::quat(rot), tran);//glm::dualquat_cast(glm::mat3x4(offset));
-    
     OffsetDQ = glm::normalize(glm::fdualquat(glm::normalize(glm::quat_cast(offset)), glm::vec3(offset[3])));
-    if (OffsetDQ.dual.w == -0)
-        OffsetDQ.dual.w = 0;
 }
 
 void Bone::SetDefaultTransformation(glm::mat4 defaultTransformation)
 {
     DefaultTransformation = defaultTransformation;
 
-    //glm::mat3x3 rot(defaultTransformation);
-    //glm::vec3 tran(defaultTransformation[3]);
-    //DefaultTransformationDQ = glm::fdualquat(glm::quat(rot), tran);//glm::dualquat_cast(glm::mat3x4(defaultTransformation));
-
     DefaultTransformationDQ = glm::normalize(glm::fdualquat(glm::normalize(glm::quat_cast(defaultTransformation)), glm::vec3(defaultTransformation[3])));
-    if (DefaultTransformationDQ.dual.w == -0)
-        DefaultTransformationDQ.dual.w = 0;
 }
 
 void Skeleton::SetGlobalInverseMatrix(glm::mat4 globalInverseMatrix)
 {
     m_GlobalInverseTransform = globalInverseMatrix;
 
-    glm::mat3x3 rot(globalInverseMatrix);
-    glm::vec3 tran(globalInverseMatrix[3]);
-    m_GlobalInverseTransformDQ = glm::fdualquat(glm::quat(rot), tran);//glm::dualquat_cast(glm::mat3x4(globalInverseMatrix));
-
     m_GlobalInverseTransformDQ = glm::normalize(glm::fdualquat(glm::normalize(glm::quat_cast(globalInverseMatrix)), glm::vec3(globalInverseMatrix[3])));
-    if (m_GlobalInverseTransformDQ.dual.w == -0)
-        m_GlobalInverseTransformDQ.dual.w = 0;
 }
 
 void Skeleton::TransformBonesMat4(std::vector<glm::mat4>& transforms, float time, const Animation* animation)

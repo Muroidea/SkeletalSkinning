@@ -53,7 +53,7 @@ void Application::InitScene()
 	
 	AnimationState *animState = new AnimationState(m_AnimationManager->Get("Warrok_WarriorIdle"));
 	m_RootNode->AddChild(new GameObject("Warrok 1", m_ModelManager->Get("Warrok"), animState));
-
+	
 	animState = new AnimationState(m_AnimationManager->Get("Warrok_WarriorIdle"));
 	animState->SetSkinningType(SkinningType::DUAL_QUATERNION_SKINNING);
 	GameObject* go = new GameObject("Warrok 2", m_ModelManager->Get("Warrok"), animState);

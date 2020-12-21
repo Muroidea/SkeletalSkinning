@@ -5,7 +5,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <string>
 
@@ -33,7 +33,7 @@ class Animation
 {
 private:
 	std::string m_Name;
-	std::map<std::string, std::vector<KeyFrame>> m_BoneMapping;
+	std::unordered_map<std::string, std::vector<KeyFrame>> m_BoneMapping;
 
 	float m_Duration;
 	float m_TickPerSecond;

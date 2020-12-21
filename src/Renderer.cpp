@@ -64,13 +64,25 @@ void Renderer::RenderRecursive(GameObject *node, double deltaTime)
             if (animState->GetSkinningType() == SkinningType::LINEAR_BLEND_SKINNING)
             {
                 m_ShaderModel->SetUniform1i("SkinningMode", 0);
+
+                //auto t1 = std::chrono::high_resolution_clock::now();
                 node->m_Model->m_Skeleton.TransformBonesMat4(m_AnimationTransforms, animState->GetTime(), animState->GetAnimation());
+                //auto t2 = std::chrono::high_resolution_clock::now();
+                //double t = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+                //printf("LBS: %f \n", t);
+
                 m_PerModelData->UploadDataInBytes(m_AnimationTransforms.data(), 0, node->m_Model->GetNumBones() * sizeof(glm::mat4));
             }
             else // DUAL_QUATERNION_SKINNING || CENTER_OF_ROTATION_SKINNING
             {
                 m_ShaderModel->SetUniform1i("SkinningMode", 1);
+
+                //auto t1 = std::chrono::high_resolution_clock::now();
                 node->m_Model->m_Skeleton.TransformBonesDualQuat(m_AnimationTransformsDQ, animState->GetTime(), animState->GetAnimation());
+                //auto t2 = std::chrono::high_resolution_clock::now();
+                //double t = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+                //printf("DQS: %f \n", t);
+
                 m_PerModelData->UploadDataInBytes(m_AnimationTransformsDQ.data(), 100 * sizeof(glm::mat4), node->m_Model->GetNumBones() * sizeof(glm::fdualquat));
             }
         }
