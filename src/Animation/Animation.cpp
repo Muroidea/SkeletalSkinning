@@ -52,6 +52,10 @@ void Animation::LoadAnimation(const aiAnimation* animation)
                 nodeAnim->mScalingKeys[j].mValue.x,
                 nodeAnim->mScalingKeys[j].mValue.y,
                 nodeAnim->mScalingKeys[j].mValue.z);
+            
+            keyFrame[j].DQ = glm::fdualquat(
+                keyFrame[j].Rotation,
+                keyFrame[j].Translation);
         }
     }
 }

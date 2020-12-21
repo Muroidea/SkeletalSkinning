@@ -16,6 +16,7 @@ public:
 
 	static void DrawModel(GameObject *node);
 	static void DrawAnimationState(GameObject *node);
+	static void DrawActionsForAll(GameObject* node);
 
 private:
 	static void DrawTreeRecursive(GameObject *node, GameObject *&selectedNode);

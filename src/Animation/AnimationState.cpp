@@ -4,9 +4,10 @@ AnimationState::AnimationState(Animation* animation)
 {
     m_Animation = animation;
     m_Enabled = false;
-    m_Loop = false;
+    m_Loop = true;
     m_LocalTime = 0.0f;
     m_TimeScale = 1.0f;
+    m_SkinningType = SkinningType::LINEAR_BLEND_SKINNING;
 }
 
 AnimationState::~AnimationState()
@@ -17,8 +18,8 @@ AnimationState::~AnimationState()
 void AnimationState::SetAnimation(Animation* animation)
 {
     m_Animation = animation;
-    m_Enabled = false;
-    m_Loop = false;
+    //m_Enabled = false;
+    //m_Loop = true;
     m_LocalTime = 0.0f;
 }
 
@@ -55,7 +56,7 @@ bool AnimationState::HasEnded() const
 
 void AnimationState::AddTime(float deltaTime)
 {
-    if (!m_Enabled) return;
+    if (!m_Enabled || !m_Animation) return;
     // if m_Scale < 0.0f than reverse
 
     m_LocalTime += deltaTime * m_TimeScale * m_Animation->GetTicksPerSecond();
@@ -87,4 +88,14 @@ void AnimationState::SetScale(float scale)
 float AnimationState::GetScale() const
 {
     return m_TimeScale;
+}
+
+void AnimationState::SetSkinningType(SkinningType type)
+{
+    m_SkinningType = type;
+}
+
+SkinningType AnimationState::GetSkinningType() const
+{
+    return m_SkinningType;
 }

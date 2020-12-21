@@ -46,7 +46,6 @@ public:
 	void AddChild(GameObject* child);
 	void SetToRemove();
 
-
 	void SetAnimationState(AnimationState* animationState);
 
 	int GetNumChildren();
@@ -67,6 +66,9 @@ public:
 	bool GetEnabled() const;
 	void SetEnabled(bool enabled);
 
+	template <typename Functor>
+	void DoForAll(Functor& functor);
+
 	bool operator==(const GameObject& other);
 
 private:
@@ -74,5 +76,16 @@ private:
 
 	friend class GameObjectGUI;
 };
+
+template <typename Functor>
+void GameObject::DoForAll(Functor& functor)
+{
+	if (!m_Enabled) return;
+
+	functor(*this);
+
+	for (int i = 0; i < m_Children.size(); i++)
+		m_Children[i]->DoForAll(functor);
+}
 
 #endif // !GAMEOBJECT_H

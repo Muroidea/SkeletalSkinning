@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-void ManagerGUI::Draw(ModelManager * manager)
+void ManagerGUI::DrawModels(ModelManager * manager)
 {
 	ImGui::NewLine();
 
@@ -25,7 +25,7 @@ void ManagerGUI::Draw(ModelManager * manager)
 	ImGui::EndChild();
 }
 
-void ManagerGUI::Draw(AnimationManager * manager)
+void ManagerGUI::DrawAnimations(AnimationManager * manager)
 {
 	ImGui::NewLine();
 

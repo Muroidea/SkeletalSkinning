@@ -239,7 +239,69 @@ void GameObjectGUI::DrawAnimationState(GameObject * node)
 
 		ImGui::DragFloat("Time scale", &animState->m_TimeScale, 0.1f, 0.1f, 20.0f, "%.1f", ImGuiSliderFlags_None);
 		ImGui::SliderFloat("Time in ticks", &animState->m_LocalTime, 0.0f, animation->GetDuration(), "%.1f");
+
+		ImGui::NewLine();
+
+		const char* itemsL[] = { "Linear blend skinning", "Dual quaternion skinning", "Center of rotation skinning" };
+		SkinningType items[] = { SkinningType::LINEAR_BLEND_SKINNING, SkinningType::DUAL_QUATERNION_SKINNING, SkinningType::CENTERS_OF_ROTATION_SKINNING };
+		SkinningType current = animState->GetSkinningType();
+
+		const char* combo_label = itemsL[(int)current];
+		if (ImGui::BeginCombo("##skinning", combo_label, ImGuiComboFlags_None))
+		{
+			for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+			{
+				const bool is_selected = (current == items[n]);
+				if (ImGui::Selectable(itemsL[n], is_selected))
+					animState->SetSkinningType(items[n]);
+
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
 	}
+}
+
+void GameObjectGUI::DrawActionsForAll(GameObject* node)
+{
+	ImGui::NewLine();
+
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.52f, 0.0f, 0.0f, 1.0f });
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.72f, 0.0f, 0.0f, 1.0f });
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.92f, 0.0f, 0.0f, 1.0f });
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 0.0f });;
+
+	float buttonSize = 70.0f;
+
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionWidth() * 0.25f);
+	if (ImGui::Button("Play all", ImVec2(buttonSize, buttonSize)))
+	{
+		node->DoForAll([](GameObject& node) {
+			node.m_AnimationState->SetLoop(true);
+			node.m_AnimationState->SetEnabled(true);
+		});
+	}
+
+	ImGui::PopStyleColor(3);
+	ImGui::SameLine();
+
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionWidth() * 0.75f - buttonSize);
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.52f, 1.0f });
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.0f, 0.0f, 0.72f, 1.0f });
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.0f, 0.0f, 0.92f, 1.0f });
+
+	if (ImGui::Button("Stop all", ImVec2(buttonSize, buttonSize)))
+	{
+		node->DoForAll([](GameObject& node) {
+			node.m_AnimationState->SetLoop(false);
+			node.m_AnimationState->SetEnabled(false);
+		});
+	}
+
+	ImGui::PopStyleColor(3);
+	ImGui::PopStyleVar(1);
 }
 
 bool GameObjectGUI::DrawVec3(const std::string & labelID, glm::vec3 & vector, float moveStep)

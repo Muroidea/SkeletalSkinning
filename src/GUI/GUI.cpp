@@ -87,7 +87,7 @@ void GUI::Render(GameObject* rootNode, ModelManager* modelManager, AnimationMana
 
     if (ImGui::BeginTabItem("Models"))
     {
-		ManagerGUI::Draw(modelManager);
+		ManagerGUI::DrawModels(modelManager);
 
 		if (m_SelectedNode)
 		{
@@ -101,7 +101,7 @@ void GUI::Render(GameObject* rootNode, ModelManager* modelManager, AnimationMana
 
     if (ImGui::BeginTabItem("Animations"))
     {
-		ManagerGUI::Draw(animationManager);
+		ManagerGUI::DrawAnimations(animationManager);
 
         if (m_SelectedNode)
         {
@@ -109,6 +109,10 @@ void GUI::Render(GameObject* rootNode, ModelManager* modelManager, AnimationMana
 
 			GameObjectGUI::DrawAnimationState(m_SelectedNode);
         }
+
+        ImGui::NewLine(); ImGui::Separator(); ImGui::NewLine();
+
+        GameObjectGUI::DrawActionsForAll(rootNode);
 
         ImGui::EndTabItem();
     }

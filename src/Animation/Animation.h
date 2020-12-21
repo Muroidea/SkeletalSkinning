@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/dual_quaternion.hpp>
 
 #include <glad/glad.h>
 #include <assimp/Importer.hpp>
@@ -24,6 +25,8 @@ struct KeyFrame
 	glm::vec3 Translation;
 	glm::quat Rotation;
 	glm::vec3 Scaling;
+
+	glm::dualquat DQ;
 };
 
 class Animation

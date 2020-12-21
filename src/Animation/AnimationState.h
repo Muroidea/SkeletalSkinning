@@ -3,6 +3,8 @@
 
 #include "Animation.h"
 
+enum class SkinningType { LINEAR_BLEND_SKINNING, DUAL_QUATERNION_SKINNING, CENTERS_OF_ROTATION_SKINNING };
+
 class AnimationState
 {
 private:
@@ -13,6 +15,8 @@ private:
 
 	float m_LocalTime; // in ticks
 	float m_TimeScale;
+
+	SkinningType m_SkinningType;
 
 public:
 	AnimationState(Animation* animation);
@@ -27,14 +31,17 @@ public:
 	void SetLoop(bool enabled);
 	bool GetLoop() const;
 
-	bool HasEnded() const;
 	void AddTime(float deltaTime); // in secons
+	bool HasEnded() const;
 
 	void SetTime(float ticks); // in ticks 
 	float GetTime() const;
 
 	void SetScale(float scale);
 	float GetScale() const;
+
+	void SetSkinningType(SkinningType type);
+	SkinningType GetSkinningType() const;
 
 	friend class GameObjectGUI;
 };

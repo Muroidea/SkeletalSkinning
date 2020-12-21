@@ -51,8 +51,15 @@ void Application::InitScene()
 	//Akai animation
 	m_AnimationManager->Load("Akai_StandingRunForward.fbx");
 	
-	m_RootNode->AddChild(new GameObject("Akai 1", m_ModelManager->Get("Akai")));
-	m_RootNode->AddChild(new GameObject("Warrok 1", m_ModelManager->Get("Warrok")));
+	AnimationState *animState = new AnimationState(m_AnimationManager->Get("Warrok_WarriorIdle"));
+	m_RootNode->AddChild(new GameObject("Warrok 1", m_ModelManager->Get("Warrok"), animState));
+
+	animState = new AnimationState(m_AnimationManager->Get("Warrok_WarriorIdle"));
+	animState->SetSkinningType(SkinningType::DUAL_QUATERNION_SKINNING);
+	GameObject* go = new GameObject("Warrok 2", m_ModelManager->Get("Warrok"), animState);
+	go->SetLocalPosition(glm::vec3(200.0f, 0.0f, 0.0f));
+	m_RootNode->AddChild(go);
+
 }
 
 void Application::Run()

@@ -7,8 +7,8 @@
 class ManagerGUI
 {
 public:
-	static void Draw(ModelManager *manager);
-	static void Draw(AnimationManager *manager);
+	static void DrawModels(ModelManager *manager);
+	static void DrawAnimations(AnimationManager *manager);
 };
 
 #endif // !MANAGERGUI_H

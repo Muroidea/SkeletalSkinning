@@ -186,7 +186,7 @@ void Model::LoadMeshInfo(unsigned int meshIndex, const aiMesh* mesh, const aiNod
 
     if (mesh->HasBones())
     {
-        m_Skeleton.m_GlobalInverseTransform = glm::inverse(glm::transpose(glm::make_mat4(&node->mTransformation.a1)));
+        m_Skeleton.SetGlobalInverseMatrix(glm::inverse(glm::transpose(glm::make_mat4(&node->mTransformation.a1))));
         LoadBones(meshIndex, mesh, node);
     }
 
@@ -215,7 +215,7 @@ void Model::LoadBones(unsigned int meshIndex, const aiMesh* mesh, const aiNode* 
     for (int i = 0; i < mesh->mNumBones; i++)
     {
         int boneID = boneMapping[m_Skeleton.m_Bones[i].Name];
-        m_Skeleton.m_Bones[i].Offset = glm::transpose(glm::make_mat4(&mesh->mBones[boneID]->mOffsetMatrix.a1));
+        m_Skeleton.m_Bones[i].SetOffset(glm::transpose(glm::make_mat4(&mesh->mBones[boneID]->mOffsetMatrix.a1)));
         
         for (unsigned int j = 0; j < mesh->mBones[boneID]->mNumWeights; j++)
         {
@@ -234,7 +234,7 @@ void Model::ProcessNode(const aiNode* node, const std::map<std::string, unsigned
         Bone& bone = m_Skeleton.m_Bones[m_Skeleton.m_NumBones];
         bone.Name = node->mName.C_Str();
         bone.ParentID = parentID;
-        bone.DefaultTransformation = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
+        bone.SetDefaultTransformation(glm::transpose(glm::make_mat4(&node->mTransformation.a1)));
         parentID = m_Skeleton.m_NumBones;
         m_Skeleton.m_NumBones++;
     }
