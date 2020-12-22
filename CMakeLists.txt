@@ -41,8 +41,8 @@ find_package(GLFW3 REQUIRED)
 # ASSIMP
 find_package(ASSIMP REQUIRED)
 
-# STB_IMAGE
-add_library(STB_IMAGE "externals/stb_image.cpp")
+# ASSIMP
+find_package(FreeImage REQUIRED)
 
 # GLAD
 add_library(GLAD "externals/glad.c")
@@ -57,7 +57,7 @@ add_library(imgui externals/imgui.cpp
 				  externals/imgui_tables.cpp)
 
 # Put all libraries into a variable
-set(LIBS glfw3 opengl32 assimp STB_IMAGE GLAD imgui)
+set(LIBS glfw3 opengl32 assimp GLAD imgui FreeImage)
 
 # Define the include DIRs
 include_directories(
