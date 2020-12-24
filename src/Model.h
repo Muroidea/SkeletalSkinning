@@ -69,7 +69,6 @@ private:
     std::vector<unsigned int> m_Indices;
     std::vector<Material*> m_Materials;
 
-
 public:
     Skeleton m_Skeleton;
     Model(std::string name);

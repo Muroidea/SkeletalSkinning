@@ -301,19 +301,41 @@ void Model::Render()
 
             if (m_Materials[matIndex]->Diffuse)
                 m_Materials[matIndex]->Diffuse->Bind(0);
-
+                                            
             if (m_Materials[matIndex]->Specular)
                 m_Materials[matIndex]->Specular->Bind(1);
 
             if (m_Materials[matIndex]->Normals)
                 m_Materials[matIndex]->Normals->Bind(2);
         }
-
+        /*
+        GLuint m_TimerGL;
+        glGenQueries(GL_TIME_ELAPSED, &m_TimerGL);
+        glBeginQuery(GL_TIME_ELAPSED, m_TimerGL);
+        */
         glDrawElementsBaseVertex(GL_TRIANGLES,
             m_Entries[i].NumIndices,
             GL_UNSIGNED_INT,
             (void*)(sizeof(unsigned int) * m_Entries[i].BaseIndex),
             m_Entries[i].BaseVertex);
+        /*
+        glEndQuery(GL_TIME_ELAPSED);
+
+        // retrieving the recorded elapsed time
+        // wait until the query result is available
+        int done = 0;
+        while (!done) {
+            glGetQueryObjectiv(m_TimerGL,
+                GL_QUERY_RESULT_AVAILABLE,
+                &done);
+        }
+
+        // get the query result
+        GLuint64 elapsed_time;
+        glGetQueryObjectui64v(m_TimerGL, GL_QUERY_RESULT, &elapsed_time);
+        printf("Time Elapsed: %f ms \n", elapsed_time / 1000000.0);
+
+        glDeleteQueries(1, &m_TimerGL);*/
     }
 
     m_VAO->Unbind();
