@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <glm/gtx/quaternion.hpp>
+
 Animation::Animation(std::string name)
     : m_Name(name)
 {
@@ -52,7 +54,7 @@ void Animation::LoadAnimation(const aiAnimation* animation)
                 nodeAnim->mScalingKeys[j].mValue.x,
                 nodeAnim->mScalingKeys[j].mValue.y,
                 nodeAnim->mScalingKeys[j].mValue.z);
-            
+
             keyFrame[j].DQ = glm::fdualquat(
                 keyFrame[j].Rotation,
                 keyFrame[j].Translation);

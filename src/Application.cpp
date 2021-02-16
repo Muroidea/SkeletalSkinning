@@ -5,6 +5,13 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
+#include <fstream>
+
+bool AppState::s_SequenceMode = false;
+bool AppState::s_Subdivide = false;
+int AppState::s_ChoosenScenario = 1;
+void (Application::* AppState::s_Scenarios[3])() = { &Application::Scenario1, &Application::Scenario3, &Application::Scenario2 };
+std::string AppState::s_ScenarioName[3] = { "Akai arm test", "Warrok arm test", "Sign language synthesis 1" };
 
 Application* Application::s_Instance = nullptr;
 
@@ -39,27 +46,216 @@ Application::~Application()
 
 void Application::InitScene()
 {
+	std::ifstream file("../resources/config.txt", std::ifstream::in);
+	if (file.is_open())
+	{
+		std::string line;
+		while (std::getline(file, line))
+		{
+			if (line.find("subdivide") != std::string::npos)
+			{
+				auto it = line.find("=");
+				std::string res = line.substr(it + 2);
+				if (res == "true") AppState::s_Subdivide = true;
+			}
+		}
+	}
+
 	//Load models
 	m_ModelManager->Load("Akai.fbx");
 	m_ModelManager->Load("Warrok.fbx");
+	m_ModelManager->Load("Willie.fbx");
+
+	//Willie animation
+	m_AnimationManager->Load("Willie_WillieTest.fbx");
 
 	//Warrok animation
 	m_AnimationManager->Load("Warrok_OrcIdle.fbx");
 	m_AnimationManager->Load("Warrok_WarriorIdle.fbx");
 	m_AnimationManager->Load("Warrok_StandingRunForward.fbx");
+	m_AnimationManager->Load("Warrok_ArmTest.fbx");
 
 	//Akai animation
+	m_AnimationManager->Load("Akai_Instytut.fbx");
+	m_AnimationManager->Load("Akai_Informatyki.fbx");
+	m_AnimationManager->Load("Akai_Jest.fbx");
+	m_AnimationManager->Load("Akai_Jednostka.fbx");
+	m_AnimationManager->Load("Akai_Naukowo.fbx"); 
+	m_AnimationManager->Load("Akai_Badawcza.fbx");
+	m_AnimationManager->Load("Akai_Politechniki.fbx");
+	m_AnimationManager->Load("Akai_Lodzkiej.fbx");
+	m_AnimationManager->Load("Akai_ArmTest.fbx");
 	m_AnimationManager->Load("Akai_StandingRunForward.fbx");
-	
-	AnimationState *animState = new AnimationState(m_AnimationManager->Get("Warrok_WarriorIdle"));
-	m_RootNode->AddChild(new GameObject("Warrok 1", m_ModelManager->Get("Warrok"), animState));
-	
-	animState = new AnimationState(m_AnimationManager->Get("Warrok_WarriorIdle"));
-	animState->SetSkinningType(SkinningType::DUAL_QUATERNION_SKINNING);
-	GameObject* go = new GameObject("Warrok 2", m_ModelManager->Get("Warrok"), animState);
-	go->SetLocalPosition(glm::vec3(200.0f, 0.0f, 0.0f));
+
+	std::invoke(AppState::s_Scenarios[AppState::s_ChoosenScenario], Application::Get());
+}
+
+void Application::ClearScene()
+{
+	delete m_RootNode;
+	m_RootNode = new GameObject("root");
+}
+
+
+void Application::Scenario1()
+{
+	ClearScene();
+	AppState::s_SequenceMode = false;
+
+	m_Renderer->Reset();
+
+	// Prepare scene elements
+	auto model = m_ModelManager->Get("Akai");
+	auto animation = m_AnimationManager->Get("Akai_ArmTest");
+
+
+	AnimationState* animState = new AnimationState(animation);
+	animState->SetSkinningType(SkinningType::LINEAR_BLEND_SKINNING);
+	GameObject* go = new GameObject("object 1", model, animState);
+
+	go->SetLocalPosition(glm::vec3(-150.0f, 0.0f, 0.0f));
+
 	m_RootNode->AddChild(go);
 
+
+	animState = new AnimationState(animation);
+	animState->SetSkinningType(SkinningType::DUAL_QUATERNION_SKINNING);
+
+	go = new GameObject("object 2", model, animState);
+
+	go->SetLocalPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+
+	m_RootNode->AddChild(go);
+
+
+	animState = new AnimationState(animation);
+	animState->SetSkinningType(SkinningType::CENTERS_OF_ROTATION_SKINNING);
+
+	go = new GameObject("object 3", model, animState);
+	
+	go->SetLocalPosition(glm::vec3(150.0f, 0.0f, 0.0f));
+
+	m_RootNode->AddChild(go);
+}
+
+void Application::Scenario2()
+{
+	ClearScene();
+	AppState::s_SequenceMode = true;
+
+	m_Renderer->Reset();
+
+	// Prepare scene elements
+	auto model = m_ModelManager->Get("Akai");
+
+	GameObject* go = new GameObject("object 1", model);
+
+	go->m_AnimationSequence->SetSkinningType(SkinningType::LINEAR_BLEND_SKINNING);
+	go->m_AnimationSequence->SetLoop(true);
+
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Instytut")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Informatyki")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Politechniki")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Lodzkiej")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Jest")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Jednostka")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Naukowo")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Badawcza")));
+	go->m_AnimationSequence->SetEnabled(true, true);
+	go->m_AnimationSequence->SetEnabled(false);
+
+	go->SetLocalPosition(glm::vec3(-110.0f, 0.0f, 0.0f));
+	//go->SetLocalRotation(glm::vec3(180.0f, 0.0f, 0.0f));
+	//go->SetLocalScale(glm::vec3(50.0f, 50.0f, 50.0f));
+
+	m_RootNode->AddChild(go);
+
+
+	go = new GameObject("object 2", model);
+
+	go->m_AnimationSequence->SetSkinningType(SkinningType::DUAL_QUATERNION_SKINNING);
+	go->m_AnimationSequence->SetLoop(true);
+
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Instytut")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Informatyki")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Politechniki")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Lodzkiej")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Jest")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Jednostka")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Naukowo")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Badawcza")));
+	go->m_AnimationSequence->SetEnabled(true, true);
+	go->m_AnimationSequence->SetEnabled(false);
+
+	go->SetLocalPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+	//go->SetLocalRotation(glm::vec3(180.0f, 0.0f, 0.0f));
+	//go->SetLocalScale(glm::vec3(50.0f, 50.0f, 50.0f));
+
+	m_RootNode->AddChild(go);
+
+
+	go = new GameObject("object 3", model);
+
+	go->m_AnimationSequence->SetSkinningType(SkinningType::CENTERS_OF_ROTATION_SKINNING);
+	go->m_AnimationSequence->SetLoop(true);
+
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Instytut")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Informatyki")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Politechniki")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Lodzkiej")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Jest")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Jednostka")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Naukowo")));
+	go->m_AnimationSequence->AddAnimation(new AnimationState(m_AnimationManager->Get("Akai_Badawcza")));
+	go->m_AnimationSequence->SetEnabled(true, true);
+	go->m_AnimationSequence->SetEnabled(false);
+
+	go->SetLocalPosition(glm::vec3(110.0f, 0.0f, 0.0f));
+	//go->SetLocalRotation(glm::vec3(180.0f, 0.0f, 0.0f));
+	//go->SetLocalScale(glm::vec3(50.0f, 50.0f, 50.0f));
+
+	m_RootNode->AddChild(go);
+}
+
+void Application::Scenario3()
+{
+	ClearScene();
+	AppState::s_SequenceMode = false;
+
+	m_Renderer->Reset();
+
+	// Prepare scene elements
+	auto model = m_ModelManager->Get("Warrok");
+	auto animation = m_AnimationManager->Get("Warrok_ArmTest");
+
+
+	AnimationState* animState = new AnimationState(animation);
+	animState->SetSkinningType(SkinningType::LINEAR_BLEND_SKINNING);
+	GameObject* go = new GameObject("object 1", model, animState);
+
+	go->SetLocalPosition(glm::vec3(-200.0f, 0.0f, 0.0f));
+
+	m_RootNode->AddChild(go);
+
+
+	animState = new AnimationState(animation);
+	animState->SetSkinningType(SkinningType::DUAL_QUATERNION_SKINNING);
+
+	go = new GameObject("object 2", model, animState);
+
+	go->SetLocalPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+
+	m_RootNode->AddChild(go);
+
+
+	animState = new AnimationState(animation);
+	animState->SetSkinningType(SkinningType::CENTERS_OF_ROTATION_SKINNING);
+
+	go = new GameObject("object 3", model, animState);
+
+	go->SetLocalPosition(glm::vec3(200.0f, 0.0f, 0.0f));
+
+	m_RootNode->AddChild(go);
 }
 
 void Application::Run()
@@ -69,9 +265,6 @@ void Application::Run()
 	float currentFrame;
 
 	OnInit();
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
 
 	glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 

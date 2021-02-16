@@ -14,6 +14,18 @@
 #include "Managers/ModelManager.h"
 #include "Managers/AnimationManager.h"
 
+class Application;
+
+class AppState
+{
+public:
+    static bool s_SequenceMode;
+    static bool s_Subdivide;
+    static int s_ChoosenScenario;
+    static void (Application::*s_Scenarios[3])();
+    static std::string s_ScenarioName[3];
+};
+
 class Application
 {
 private:
@@ -37,11 +49,16 @@ public:
 
     void Run();
 
+    void Scenario1();
+    void Scenario2();
+    void Scenario3();
+
 private:
     Application(std::string title, unsigned int width, unsigned int height);
     ~Application();
 
     void InitScene();
+    void ClearScene();
 
     void OnInit();
     void OnShutdown();

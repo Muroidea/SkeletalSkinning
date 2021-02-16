@@ -15,7 +15,7 @@ protected:
 	~Manager();
 
 public:
-	T* Get(std::string key);
+	virtual T* Get(std::string key);
 
 	bool IsLoaded(std::string);
 	virtual bool Load(std::string filename) = 0;

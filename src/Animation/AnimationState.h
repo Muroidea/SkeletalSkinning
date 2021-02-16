@@ -19,6 +19,11 @@ private:
 	SkinningType m_SkinningType;
 
 public:
+	float m_CutBegin;
+	float m_CutEnd;
+	float m_BlendLength;
+
+public:
 	AnimationState(Animation* animation);
 	~AnimationState();
 
@@ -31,7 +36,7 @@ public:
 	void SetLoop(bool enabled);
 	bool GetLoop() const;
 
-	void AddTime(float deltaTime); // in secons
+	void AddTime(float deltaTime); // in seconds
 	bool HasEnded() const;
 
 	void SetTime(float ticks); // in ticks 
@@ -39,6 +44,8 @@ public:
 
 	void SetScale(float scale);
 	float GetScale() const;
+
+	inline float GetDuration() const { return m_Animation->GetDuration(); }
 
 	void SetSkinningType(SkinningType type);
 	SkinningType GetSkinningType() const;

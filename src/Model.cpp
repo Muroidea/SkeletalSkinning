@@ -9,22 +9,10 @@
 #include <iostream>
 #include <chrono>
 
+#include "Profiler.h"
+#include "Application.h"
+
 #include <glm/gtx/string_cast.hpp>
-
-bool Vertex::AddBoneData(unsigned int boneID, float weight)
-{
-    for (unsigned int i = 0; i < NUM_BONES_PER_VERTEX; i++)
-    {
-        if (Weights[i] == 0.0f)
-        {
-            IDs[i] = boneID;
-            Weights[i] = weight;
-            return true;
-        }
-    }
-
-    return false;
-}
 
 Model::Model(std::string name)
     : m_Name(name)
@@ -34,12 +22,10 @@ Model::Model(std::string name)
     m_VBO = nullptr;
 }
 
-
 Model::~Model()
 {
     Clear();
 }
-
 
 void Model::Clear()
 {
@@ -83,7 +69,6 @@ bool Model::LoadModel(const std::string& filename)
 
     scene = importer.ReadFile(filename.c_str(),
         aiProcess_Triangulate |
-        aiProcess_GenSmoothNormals |
         aiProcess_JoinIdenticalVertices);
 
     bool ret = false;
@@ -94,6 +79,27 @@ bool Model::LoadModel(const std::string& filename)
 
     LoadMaterials(scene, filename);
 
+    // Generate CoR's
+    std::vector<glm::vec3> cors(m_Vertices.size(), glm::vec3(0.0f));
+    
+    CoRCounter corCounter(0.1, 0.15, 8);
+    corCounter.SetNumberOfBones(m_Skeleton.m_NumBones);
+    corCounter.SetSubdivision(AppState::s_Subdivide);
+
+    std::string name = filename.substr(0, filename.find_last_of("."));
+    name = name.substr(name.find_last_of("/") + 1, name.length());
+    corCounter.SetCoRsPath(name);
+    name += " \n";
+    {
+        PROFILE_SCOPE(name.c_str());
+        cors = corCounter.GenerateCoRs(m_Indices, m_Vertices);
+    }
+    
+    for (int i = 0; i < m_Vertices.size(); i++)
+        m_Vertices[i].CoR = std::move(cors[i]);
+    
+
+    // Prepare OpenGL stuff
     if (ret)
     {
         m_VAO = new VertexArray();
@@ -103,10 +109,10 @@ bool Model::LoadModel(const std::string& filename)
 
         VertexBufferLayout vertexBufferLayout;
         vertexBufferLayout.PushElement(VertexType::VEC3F); // Position
-        vertexBufferLayout.PushElement(VertexType::VEC3F); // Normals
         vertexBufferLayout.PushElement(VertexType::VEC2F); // TexCoord
-        vertexBufferLayout.PushElement(VertexType::VEC4I); // TexCoord
-        vertexBufferLayout.PushElement(VertexType::VEC4F); // TexCoord
+        vertexBufferLayout.PushElement(VertexType::VEC4I); // BonesID
+        vertexBufferLayout.PushElement(VertexType::VEC4F); // Weights
+        vertexBufferLayout.PushElement(VertexType::VEC3F); // CoRs
 
         m_VAO->BindVertexBuffer(*m_VBO, vertexBufferLayout);
         m_VAO->BindIndexBuffer(*m_IBO);
@@ -163,13 +169,6 @@ void Model::LoadMeshInfo(unsigned int meshIndex, const aiMesh* mesh, const aiNod
         // Position
         vector3 = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
         vertex.Position = vector3;
-
-        // Normals
-        if (mesh->HasNormals())
-            vector3 = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-        else
-            vector3 = glm::vec3(0.0f);
-        vertex.Normal = vector3;
 
         // TexCoords
         if (mesh->mTextureCoords[0])
@@ -250,9 +249,7 @@ void Model::LoadMaterials(const aiScene* scene, const std::string& filename)
     std::string dir = filename.substr(0, slashIndex);
     
     aiTextureType textureTypes[] = {
-        aiTextureType::aiTextureType_DIFFUSE,
-        aiTextureType::aiTextureType_SPECULAR,
-        aiTextureType::aiTextureType_NORMALS
+        aiTextureType::aiTextureType_DIFFUSE
     };
 
     // Initialize the materials
@@ -265,9 +262,11 @@ void Model::LoadMaterials(const aiScene* scene, const std::string& filename)
 
         for (auto type : textureTypes)
         {
-            if (material->GetTextureCount(type) > 0)
+            if (material->GetTextureCount(type) > 0 || m_Name == "Willie")
             {
                 material->GetTexture(type, 0, &texture_path, NULL, NULL, NULL, NULL, NULL);
+
+                if (m_Name == "Willie") texture_path = "/WillieColor.png";
 
                 std::string path(texture_path.data);
                 slashIndex = path.find_last_of("/");
@@ -278,10 +277,6 @@ void Model::LoadMaterials(const aiScene* scene, const std::string& filename)
 
                 if (type == aiTextureType_DIFFUSE)
                     newMaterial->Diffuse = new Texture(fullPath.c_str(), TextureType::DIFFUSE);
-                else if (type == aiTextureType_SPECULAR)
-                    newMaterial->Specular = new Texture(fullPath.c_str(), TextureType::SPECULAR);
-                else if (type == aiTextureType_NORMALS)
-                    newMaterial->Normals = new Texture(fullPath.c_str(), TextureType::NORMALS);
             }
         }
 
@@ -301,18 +296,13 @@ void Model::Render()
 
             if (m_Materials[matIndex]->Diffuse)
                 m_Materials[matIndex]->Diffuse->Bind(0);
-                                            
-            if (m_Materials[matIndex]->Specular)
-                m_Materials[matIndex]->Specular->Bind(1);
-
-            if (m_Materials[matIndex]->Normals)
-                m_Materials[matIndex]->Normals->Bind(2);
         }
         /*
         GLuint m_TimerGL;
         glGenQueries(GL_TIME_ELAPSED, &m_TimerGL);
         glBeginQuery(GL_TIME_ELAPSED, m_TimerGL);
         */
+
         glDrawElementsBaseVertex(GL_TRIANGLES,
             m_Entries[i].NumIndices,
             GL_UNSIGNED_INT,

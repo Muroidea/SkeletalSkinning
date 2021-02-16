@@ -4,10 +4,14 @@ AnimationState::AnimationState(Animation* animation)
 {
     m_Animation = animation;
     m_Enabled = false;
-    m_Loop = true;
+    m_Loop = false;
     m_LocalTime = 0.0f;
     m_TimeScale = 1.0f;
     m_SkinningType = SkinningType::LINEAR_BLEND_SKINNING;
+
+    m_CutBegin = 4.0f;
+    m_CutEnd = 4.0f;
+    m_BlendLength = 6.0f;
 }
 
 AnimationState::~AnimationState()
@@ -52,6 +56,8 @@ bool AnimationState::HasEnded() const
 {
     if (m_Animation->GetDuration() <= m_LocalTime && !m_Loop)
         return true;
+
+    return false;
 }
 
 void AnimationState::AddTime(float deltaTime)

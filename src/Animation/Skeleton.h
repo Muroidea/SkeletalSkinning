@@ -11,6 +11,7 @@
 #include <glm/gtx/dual_quaternion.hpp>
 
 #include "AnimationState.h"
+#include "AnimationSequence.h"
 
 struct Bone
 {
@@ -51,11 +52,17 @@ public:
     void TransformBonesMat4(std::vector<glm::mat4>& transforms, float time, const Animation* animation);
     void TransformBonesDualQuat(std::vector<glm::fdualquat>& transforms, float time, const Animation* animation);
 
+    void TransformBonesMat4(std::vector<glm::mat4>& transforms, const AnimationSequence* animSequence);
+    void TransformBonesDualQuat(std::vector<glm::fdualquat>& transforms, const AnimationSequence* animSequence);
+
     void GetTPoseTranformation(std::vector<glm::mat4>& transforms);
 
 private:
     void GetBoneTransformationMat4(glm::mat4& transform, float animationTime, const Bone& parentBone, Bone& bone, const Animation* animation);
     void GetBoneTransformationDualQuat(glm::fdualquat& transform, float animationTime, const Bone& parentBone, Bone& bone, const Animation* animation);
+
+    //void TransformBonesMat4(std::vector<glm::mat4>& transforms, const AnimationState* anim1, const AnimationState* anim2);
+    //void TransformBonesDualQuat(std::vector<glm::fdualquat>& transforms, const AnimationState* anim1, const AnimationState* anim2);
 };
 
 #endif // !SKELETON_H

@@ -4,6 +4,8 @@
 
 #include "GUI.h"
 
+#include "Application.h"
+
 GUI::GUI()
 {
 }
@@ -73,6 +75,19 @@ void GUI::Render(GameObject* rootNode, ModelManager* modelManager, AnimationMana
 
 	if (ImGui::BeginTabItem("Scene"))
 	{
+        ImGui::LabelText("##comboScenarioLabel", "Scenarios:");
+
+        const char* items[] = { AppState::s_ScenarioName[0].c_str(), AppState::s_ScenarioName[1].c_str(), AppState::s_ScenarioName[2].c_str() };
+        static int item_current = AppState::s_ChoosenScenario;
+        if (ImGui::Combo("##comboScenario", &item_current, items, IM_ARRAYSIZE(items)))
+        {
+            AppState::s_ChoosenScenario = item_current;
+            std::invoke(AppState::s_Scenarios[item_current], *Application::Get());
+            m_SelectedNode = nullptr;
+        }
+
+        ImGui::NewLine(); ImGui::Separator(); ImGui::NewLine();
+
 		GameObjectGUI::DrawTree(rootNode, m_SelectedNode);
             
         if (m_SelectedNode)
@@ -85,32 +100,36 @@ void GUI::Render(GameObject* rootNode, ModelManager* modelManager, AnimationMana
         ImGui::EndTabItem();
     }
 
-    if (ImGui::BeginTabItem("Models"))
-    {
-		ManagerGUI::DrawModels(modelManager);
+    if (!AppState::s_SequenceMode)
+        if (ImGui::BeginTabItem("Models"))
+        {
+		    ManagerGUI::DrawModels(modelManager);
 
-		if (m_SelectedNode)
-		{
-			ImGui::NewLine(); ImGui::Separator(); ImGui::NewLine();
+		    if (m_SelectedNode)
+		    {
+			    ImGui::NewLine(); ImGui::Separator(); ImGui::NewLine();
 
-			GameObjectGUI::DrawModel(m_SelectedNode);
-		}
+			    GameObjectGUI::DrawModel(m_SelectedNode);
+		    }
 
-        ImGui::EndTabItem();
-    }
+            ImGui::EndTabItem();
+        }
 
     if (ImGui::BeginTabItem("Animations"))
     {
-		ManagerGUI::DrawAnimations(animationManager);
-
-        if (m_SelectedNode)
+        if (!AppState::s_SequenceMode)
         {
+            ManagerGUI::DrawAnimations(animationManager);
+
+            if (m_SelectedNode)
+            {
+                ImGui::NewLine(); ImGui::Separator(); ImGui::NewLine();
+
+                GameObjectGUI::DrawAnimationState(m_SelectedNode);
+            }
+
             ImGui::NewLine(); ImGui::Separator(); ImGui::NewLine();
-
-			GameObjectGUI::DrawAnimationState(m_SelectedNode);
         }
-
-        ImGui::NewLine(); ImGui::Separator(); ImGui::NewLine();
 
         GameObjectGUI::DrawActionsForAll(rootNode);
 

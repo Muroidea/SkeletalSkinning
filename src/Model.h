@@ -22,20 +22,7 @@
 #include "BasicOpenGL/Texture.h"
 #include "Animation/Animation.h"
 #include "Animation/Skeleton.h"
-
-#define NUM_BONES_PER_VERTEX 4
-
-struct Vertex
-{
-    glm::vec3 Position;
-    glm::vec3 Normal;
-    glm::vec2 TexCoords;
-
-    unsigned int IDs[NUM_BONES_PER_VERTEX] = { 0 };
-    float Weights[NUM_BONES_PER_VERTEX] = { 0.0f };
-
-    bool AddBoneData(unsigned int boneID, float weight);
-};
+#include "CoRCounter.h"
 
 class Model
 {
@@ -71,6 +58,7 @@ private:
 
 public:
     Skeleton m_Skeleton;
+
     Model(std::string name);
     ~Model();
 

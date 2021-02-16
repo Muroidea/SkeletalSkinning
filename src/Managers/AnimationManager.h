@@ -3,6 +3,7 @@
 
 #include "Manager.h"
 #include "Animation/Animation.h"
+#include "Animation/AnimationState.h"
 
 class AnimationManager : public Manager<Animation>
 {

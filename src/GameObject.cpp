@@ -3,10 +3,12 @@
 unsigned int GameObject::s_Counter = 0;
 
 GameObject::GameObject(std::string name, Model* model, AnimationState* animationState)
-	: m_Name(name), m_Model(model)
+	: m_Name(name), m_Model(model), m_RenderRed(false)
 {
     m_ID = s_Counter;
     s_Counter++;
+
+	m_AnimationSequence = new AnimationSequence();
 
 	if (animationState == nullptr)
 		m_AnimationState = new AnimationState(nullptr);
@@ -17,7 +19,13 @@ GameObject::GameObject(std::string name, Model* model, AnimationState* animation
 GameObject::~GameObject()
 {
 	if (m_AnimationState)
+	{
 		delete m_AnimationState;
+		m_AnimationState = nullptr;
+	}
+
+	delete m_AnimationSequence;
+	m_AnimationSequence = nullptr;
 
 	for (int i = 0; i < m_Children.size(); i++)
 		delete m_Children[i];

@@ -99,6 +99,10 @@ void GameObjectGUI::DrawNode(GameObject *node)
 
 	ImGui::Checkbox(" Enable/Disable", &node->m_Enabled);
 
+	ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+	ImGui::Checkbox(" RenderRed", &node->m_RenderRed);
+
 	ImGui::NewLine();
 	ImGui::Text("Local transform: "); ImGui::SameLine();
 
@@ -158,6 +162,7 @@ void GameObjectGUI::DrawModel(GameObject* node)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+
 		}
 
 		if (ImGui::Button("Clear", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.2f, 20.0f)))
@@ -281,6 +286,8 @@ void GameObjectGUI::DrawActionsForAll(GameObject* node)
 		node->DoForAll([](GameObject& node) {
 			node.m_AnimationState->SetLoop(true);
 			node.m_AnimationState->SetEnabled(true);
+
+			node.m_AnimationSequence->SetEnabled(true);
 		});
 	}
 
@@ -297,6 +304,8 @@ void GameObjectGUI::DrawActionsForAll(GameObject* node)
 		node->DoForAll([](GameObject& node) {
 			node.m_AnimationState->SetLoop(false);
 			node.m_AnimationState->SetEnabled(false);
+
+			node.m_AnimationSequence->SetEnabled(false);
 		});
 	}
 

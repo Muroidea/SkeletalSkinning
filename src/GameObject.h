@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "Animation/AnimationSequence.h"
 #include "Animation/AnimationState.h"
 #include "Model.h"
 
@@ -35,7 +36,10 @@ private:
 
 public:
 	Model *m_Model;
+	bool m_RenderRed;
+
 	AnimationState *m_AnimationState;
+	AnimationSequence *m_AnimationSequence;
 
 public:
 	GameObject(std::string name = "GameObject", Model * model = nullptr, AnimationState* animationState = nullptr);
@@ -53,6 +57,8 @@ public:
 
 	glm::mat4 GetLocalMatrix();
 	glm::mat4 GetGlobalMatrix();
+
+	std::string GetName() const { return m_Name; }
 
 	glm::vec3 GetLocalPosition();
 	void SetLocalPosition(glm::vec3 position);

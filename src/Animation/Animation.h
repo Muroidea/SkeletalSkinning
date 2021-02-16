@@ -26,6 +26,9 @@ struct KeyFrame
 	glm::quat Rotation;
 	glm::vec3 Scaling;
 
+	glm::mat4 Mat4;
+	glm::mat4 Mat4CRS;
+
 	glm::dualquat DQ;
 };
 
